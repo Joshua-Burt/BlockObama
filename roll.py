@@ -57,7 +57,7 @@ async def roll(ctx, raw_roll):
     # Send the message containing the roll info if there was a specified modifier. Otherwise, just send the result.
     if roll_obj.modifier != 0:
         await ctx.send("> " + str(num) + " " + roll_obj.operation + " "
-                   + str(roll_obj.modifier) + " = " + str(modified_num))
+                       + str(roll_obj.modifier) + " = " + str(modified_num))
     else:
         await ctx.send("> " + str(num))
 

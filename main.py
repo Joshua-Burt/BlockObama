@@ -1,3 +1,5 @@
+import datetime
+import time
 from time import sleep
 from discord.ext import commands
 
@@ -8,10 +10,12 @@ import json
 
 DISCORD_TOKEN = 'Nzk3NjUxNTc0OTQ3MTg0NzEw.X_pk6w.uO-sRng69YLuWrIBDEr9KHNLDfY'
 
-DAVID_ID = 41641570832351234
+DAVID_ID = 416415708323512341
 MORGAN_ID = 429659989750317076
 QUINN_ID = 325111288764170240
 JACOB_ID = 416415943896596493
+AUSTIN_ID = 253305173118550026
+BEN_ID = 349986879615008778
 
 global json_file
 
@@ -21,9 +25,9 @@ bot = commands.Bot(command_prefix="!ob ")
 @bot.event
 async def on_ready():
     # Startup printing, username, etc.
-    print('Powered on [o.o]\n'
-          'Logged in as {0.user}'.format(bot))
-    print("-----------------------------")
+    log('Powered on [o.o]\n'
+              'Logged in as {0.user}'.format(bot))
+    print("---------------------------------")
 
     game = discord.Game("not Minecraft")
     await bot.change_presence(status=discord.Status.online, activity=game)
@@ -59,6 +63,7 @@ async def roll(ctx, input_string):
 
 @bot.command()
 async def start(ctx):
+    log("Starting server...")
     await ctx.send("Starting server...")
     await mcserver.start(ctx, bot)
 
@@ -67,15 +72,15 @@ async def start(ctx):
 # e.g. "Spongebob" -> "SpOnGeBoB"
 async def mockify(in_str):
     new_string = ""
-    temp = True  # true = uppercase, false = lowercase
+    case = True  # true = uppercase, false = lowercase
 
     for i in in_str:
-        if temp:
+        if case:
             new_string += i.upper()
         else:
             new_string += i.lower()
         if i != ' ':
-            temp = not temp
+            case = not case
     return new_string
 
 
@@ -90,14 +95,15 @@ async def toggle_play_on_enter(ctx):
     with open('settings.json', 'w') as f:
         json.dump(json_file, f)
 
-    await ctx.send(("Your intro is now ON" if json_file[str(ctx.message.author.id)]["play_on_enter"] else "Your intro is now OFF"))
+    await ctx.send(
+        ("Your intro is now ON" if json_file[str(ctx.message.author.id)]["play_on_enter"] else "Your intro is now OFF"))
 
 
 async def play_sound(member, source):
-    print(f'{member} has joined the vc')
-
     singing_channel = member.voice.channel
     await singing_channel.connect()
+
+    log(f'Playing {member}\'s intro in {singing_channel}')
 
     bot.voice_clients[0].play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
 
@@ -118,5 +124,17 @@ async def on_voice_state_update(member, before, after):
             await play_sound(member, "downloads/quinn_intro.mp3")
         elif member.id == JACOB_ID and json_file[str(JACOB_ID)]["play_on_enter"]:
             await play_sound(member, "downloads/jacob_intro.mp3")
+        elif member.id == AUSTIN_ID and json_file[str(AUSTIN_ID)]["play_on_enter"]:
+            await play_sound(member, "downloads/austin_intro.mp3")
+
+
+def timestamp_to_readable(timestamp):
+    value = datetime.datetime.fromtimestamp(timestamp)
+    return value.strftime('%Y-%m-%d %H:%M:%S')
+
+
+def log(input_str):
+    print(timestamp_to_readable(time.time()), input_str)
+
 
 bot.run(DISCORD_TOKEN)
