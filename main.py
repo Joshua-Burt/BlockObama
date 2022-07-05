@@ -8,8 +8,8 @@ import roll as rl
 import server as mcserver
 import json
 
+# Constants
 DISCORD_TOKEN = 'Nzk3NjUxNTc0OTQ3MTg0NzEw.X_pk6w.uO-sRng69YLuWrIBDEr9KHNLDfY'
-
 DAVID_ID = 416415708323512341
 MORGAN_ID = 429659989750317076
 QUINN_ID = 325111288764170240
@@ -25,8 +25,8 @@ bot = commands.Bot(command_prefix="!ob ")
 @bot.event
 async def on_ready():
     # Startup printing, username, etc.
-    log('Powered on [o.o]\n'
-              'Logged in as {0.user}'.format(bot))
+    log('Logged in as {0.user}'
+        '\nPowered on [o.o]'.format(bot))
     print("---------------------------------")
 
     game = discord.Game("not Minecraft")
@@ -68,6 +68,41 @@ async def start(ctx):
     await mcserver.start(ctx, bot)
 
 
+@bot.command(aliases=['intro'])
+async def toggle_intro(ctx):
+    if str(ctx.message.author.id) not in json_file:
+        ctx.send("You don't have an intro at the moment")
+        return
+
+    # Change value in variable version
+    play_on_enter = json_file[str(ctx.message.author.id)]["play_on_enter"]
+    play_on_enter = not play_on_enter
+
+    # Dump into file
+    with open('settings.json', 'w') as f:
+        json.dump(json_file, f, indent=4)
+
+    await ctx.send(
+        ("Your intro is now ON" if play_on_enter else "Your intro is now OFF"))
+
+    log("Set {}'s intro to {}".format(ctx.message.author, play_on_enter))
+
+
+@bot.event
+async def on_voice_state_update(member, before, after):
+    if not before.channel and after.channel and member.id != bot.user.id:
+
+        json_member = json_file[str(member.id)]
+        if json_member is not None:
+            if not json_member["play_on_enter"]:
+                return
+
+            await play_sound(member, "downloads/{}.mp3".format(json_member["file_name"]))
+
+
+# Helper functions
+
+
 # Take the last message sent and repeats it with alternating capitals
 # e.g. "Spongebob" -> "SpOnGeBoB"
 async def mockify(in_str):
@@ -84,19 +119,13 @@ async def mockify(in_str):
     return new_string
 
 
-@bot.command(aliases=['intro'])
-async def toggle_play_on_enter(ctx):
-    if "file_name" not in json_file[str(ctx.message.author.id)]:
-        ctx.send("You don't have an intro at the moment")
-        return
+def timestamp_to_readable(timestamp):
+    value = datetime.datetime.fromtimestamp(timestamp)
+    return value.strftime('%Y-%m-%d %H:%M:%S -')
 
-    json_file[str(ctx.message.author.id)]["play_on_enter"] = not json_file[str(ctx.message.author.id)]["play_on_enter"]
 
-    with open('settings.json', 'w') as f:
-        json.dump(json_file, f)
-
-    await ctx.send(
-        ("Your intro is now ON" if json_file[str(ctx.message.author.id)]["play_on_enter"] else "Your intro is now OFF"))
+def log(input_str):
+    print(timestamp_to_readable(time.time()), input_str)
 
 
 async def play_sound(member, source):
@@ -110,31 +139,6 @@ async def play_sound(member, source):
     sleep(4)
 
     await bot.voice_clients[0].disconnect()
-
-
-@bot.event
-async def on_voice_state_update(member, before, after):
-    if not before.channel and after.channel:
-
-        if member.id == DAVID_ID and json_file[str(DAVID_ID)]["play_on_enter"]:
-            await play_sound(member, "downloads/david_intro.mp3")
-        elif member.id == MORGAN_ID and json_file[str(MORGAN_ID)]["play_on_enter"]:
-            await play_sound(member, "downloads/morgan_intro.mp3")
-        elif member.id == QUINN_ID and json_file[str(QUINN_ID)]["play_on_enter"]:
-            await play_sound(member, "downloads/quinn_intro.mp3")
-        elif member.id == JACOB_ID and json_file[str(JACOB_ID)]["play_on_enter"]:
-            await play_sound(member, "downloads/jacob_intro.mp3")
-        elif member.id == AUSTIN_ID and json_file[str(AUSTIN_ID)]["play_on_enter"]:
-            await play_sound(member, "downloads/austin_intro.mp3")
-
-
-def timestamp_to_readable(timestamp):
-    value = datetime.datetime.fromtimestamp(timestamp)
-    return value.strftime('%Y-%m-%d %H:%M:%S')
-
-
-def log(input_str):
-    print(timestamp_to_readable(time.time()), input_str)
 
 
 bot.run(DISCORD_TOKEN)
