@@ -1,5 +1,6 @@
 import datetime
 import time
+from colorama import Fore, Back
 from time import sleep
 from discord.ext import commands
 
@@ -29,8 +30,8 @@ bot = commands.Bot(command_prefix="!ob ")
 @bot.event
 async def on_ready():
     # Startup printing, username, etc.
-    log('Logged in as {0.user}'
-        '\nPowered on [o.o]'.format(bot))
+    log('Logged in as {0.user}'.format(bot) + Fore.YELLOW +
+        '\nPowered on [o.o]' + Fore.RESET)
     print("---------------------------------")
 
     game = discord.Game("not Minecraft")
@@ -71,6 +72,7 @@ async def roll(ctx, input_string):
 async def bet(ctx, wager):
     if ctx.channel.id == 993918882228207717:
         await gamble.gamble(ctx, bot, wager, json_file, update_json, ID_LIST)
+        update_json(str(ctx.message.author.id), "bets", json_file[str(ctx.message.author.id)]["bets"] + 1)
 
 
 @bot.command()
@@ -134,7 +136,7 @@ def timestamp_to_readable(timestamp):
 
 
 def log(input_str):
-    print(timestamp_to_readable(time.time()), input_str)
+    print(Fore.RESET + timestamp_to_readable(time.time()), Fore.WHITE + input_str)
 
 
 def update_json(member_id, field, value):
@@ -153,7 +155,7 @@ async def play_sound(member, source):
     singing_channel = member.voice.channel
     await singing_channel.connect()
 
-    log(f'Playing {member}\'s intro in {singing_channel}')
+    log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE, Fore.YELLOW + singing_channel.name + Fore.RESET))
 
     bot.voice_clients[0].play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
 

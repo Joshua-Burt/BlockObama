@@ -95,7 +95,7 @@ async def points(ctx, bot, json_file, id_list):
     output = ""
     for i in range(len(id_list)):
         username = await get_user_from_id(bot, id_list[i])
-        output += "> **{}** - {}\n".format(username, json_file[str(id_list[i])]["points"])
+        output += "> **{}**:\n> \t{} Points \n> \t{} Bets\n".format(username, json_file[str(id_list[i])]["points"], json_file[str(id_list[i])]["bets"])
 
     await ctx.send("{}".format(output))
 
