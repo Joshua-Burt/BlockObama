@@ -1,26 +1,37 @@
 {
     "416415708323512341": {
         "file_name": "david_intro.mp3",
+        "points": 323,
         "play_on_enter": true
     },
     "325111288764170240": {
         "file_name": "quinn_intro.mp3",
+        "points": 20712,
         "play_on_enter": true
     },
     "429659989750317076": {
         "file_name": "morgan_intro.mp3",
+        "points": 5655,
         "play_on_enter": true
     },
     "416415943896596493": {
         "file_name": "jacob_intro.mp3",
+        "points": 56823,
         "play_on_enter": true
     },
     "382324502199271424": {
         "file_name": "josh_intro.mp3",
-        "play_on_enter": false
+        "points": 200,
+        "play_on_enter": true
     },
     "253305173118550026": {
         "file_name": "austin_intro.mp3",
+        "points": 100,
+        "play_on_enter": true
+    },
+    "349986879615008778": {
+        "file_name": "ben_intro.mp3",
+        "points": 5808,
         "play_on_enter": true
     }
 }

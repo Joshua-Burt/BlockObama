@@ -4,8 +4,10 @@ from time import sleep
 from discord.ext import commands
 
 import discord
+
 import roll as rl
 import server as mcserver
+import gamble
 import json
 
 # Constants
@@ -16,6 +18,8 @@ QUINN_ID = 325111288764170240
 JACOB_ID = 416415943896596493
 AUSTIN_ID = 253305173118550026
 BEN_ID = 349986879615008778
+JOSH_ID = 382324502199271424
+ID_LIST = [DAVID_ID, MORGAN_ID, QUINN_ID, JACOB_ID, AUSTIN_ID, BEN_ID, JOSH_ID]
 
 global json_file
 
@@ -37,6 +41,8 @@ async def on_ready():
 
     global json_file
     json_file = data
+
+    bot.loop.create_task(gamble.add_points(bot, update_json, json_file))
 
 
 @bot.command(pass_context=True)
@@ -61,6 +67,12 @@ async def roll(ctx, input_string):
     await rl.roll(ctx, input_string)
 
 
+@bot.command(aliases=["gamble"])
+async def bet(ctx, wager):
+    if ctx.channel.id == 993918882228207717:
+        await gamble.gamble(ctx, bot, wager, json_file, update_json, ID_LIST)
+
+
 @bot.command()
 async def start(ctx):
     log("Starting server...")
@@ -68,40 +80,37 @@ async def start(ctx):
     await mcserver.start(ctx, bot)
 
 
-@bot.command(aliases=['intro'])
+@bot.command(name='intro', description='Toggle intro on entering voice chat')
 async def toggle_intro(ctx):
     if str(ctx.message.author.id) not in json_file:
         ctx.send("You don't have an intro at the moment")
         return
 
-    # Change value in variable version
-    play_on_enter = json_file[str(ctx.message.author.id)]["play_on_enter"]
-    play_on_enter = not play_on_enter
+    new_play_on_enter = not json_file[str(ctx.message.author.id)]["play_on_enter"]
 
-    # Dump into file
-    with open('settings.json', 'w') as f:
-        json.dump(json_file, f, indent=4)
+    update_json(ctx.message.author.id, "play_on_enter", new_play_on_enter)
 
-    await ctx.send(
-        ("Your intro is now ON" if play_on_enter else "Your intro is now OFF"))
-
-    log("Set {}'s intro to {}".format(ctx.message.author, play_on_enter))
+    await ctx.send(("Your intro is now ON" if new_play_on_enter else "Your intro is now OFF"))
 
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-    if not before.channel and after.channel and member.id != bot.user.id:
+    if not before.channel and after.channel and not member.bot:
 
         json_member = json_file[str(member.id)]
         if json_member is not None:
             if not json_member["play_on_enter"]:
                 return
 
-            await play_sound(member, "downloads/{}.mp3".format(json_member["file_name"]))
+            await play_sound(member, "downloads/{}".format(json_member["file_name"]))
+
+
+@bot.command(aliases=["points"])
+async def say_points(ctx):
+    await gamble.points(ctx, bot, json_file, ID_LIST)
 
 
 # Helper functions
-
 
 # Take the last message sent and repeats it with alternating capitals
 # e.g. "Spongebob" -> "SpOnGeBoB"
@@ -126,6 +135,18 @@ def timestamp_to_readable(timestamp):
 
 def log(input_str):
     print(timestamp_to_readable(time.time()), input_str)
+
+
+def update_json(member_id, field, value):
+    global json_file
+    json_member = json_file[str(member_id)]
+
+    if json_member is not None:
+        json_file[str(member_id)][field] = value
+
+        # Dump into file
+        with open('settings.json', 'w') as f:
+            json.dump(json_file, f, indent=4)
 
 
 async def play_sound(member, source):
