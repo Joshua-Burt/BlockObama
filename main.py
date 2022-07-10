@@ -1,5 +1,7 @@
 import datetime
 import time
+from os.path import exists
+
 from colorama import Fore, Back
 from time import sleep
 from discord.ext import commands
@@ -153,16 +155,16 @@ def update_json(member_id, field, value):
 
 
 async def play_sound(member, source):
-    singing_channel = member.voice.channel
-    await singing_channel.connect()
+    if exists(source):
+        singing_channel = member.voice.channel
+        await singing_channel.connect()
 
-    log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE, Fore.YELLOW + singing_channel.name + Fore.RESET))
+        log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE, Fore.YELLOW + singing_channel.name + Fore.RESET))
 
-    bot.voice_clients[0].play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
+        bot.voice_clients[0].play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
 
-    sleep(4)
+        sleep(5)
 
-    await bot.voice_clients[0].disconnect()
-
+        await bot.voice_clients[0].disconnect()
 
 bot.run(DISCORD_TOKEN)
