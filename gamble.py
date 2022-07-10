@@ -110,7 +110,7 @@ async def add_points(bot, update_json, json_file):
         members = channel.members
 
         for member in members:
-            if not member.bot:
+            if not member.bot and member.id != 196360954160742400:
                 update_json(member.id, "points", json_file[str(member.id)]["points"] + 100)
 
         afk_channel = bot.get_channel(910698924606652466)
