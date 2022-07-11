@@ -40,20 +40,20 @@ async def gamble(ctx, bot, wager, json_file, update_json, id_list):
         await ctx.send("**{}** has gambled **{}** and doubled their wager. Their current balance is **{}**".format(author, wager,
                                                                                                        member[
                                                                                                            "points"]))
-    elif 0.30 < value <= 0.5:
+    elif 0.30 < value <= 0.45:
         multiple = random.random()
         update_json(author.id, "points", member["points"] - wager + round(wager * multiple))
         await ctx.send(
             "**{}** has gambled **{}** and got {:.2f}x back. Their current balance is **{}**".format(author, wager, multiple,
                                                                                          member["points"]))
 
-    elif 0.50 < value <= 0.65:
+    elif 0.45 < value <= 0.60:
         update_json(author.id, "points", member["points"] - round(wager / 2))
         await ctx.send(
             "**{}** has gambled **{}** and lost half of it. Their current balance is **{}**".format(author, wager,
                                                                                         member["points"]))
 
-    elif 0.65 < value <= 0.80:
+    elif 0.60 < value <= 0.80:
         multiple = 1 + random.random()
         update_json(author.id, "points", member["points"] - wager + round(wager * multiple))
         await ctx.send(
@@ -98,6 +98,11 @@ async def points(ctx, bot, json_file, id_list):
         output += "> **{}**:\n> \t{} Points \n> \t{} Bets\n".format(username, json_file[str(id_list[i])]["points"], json_file[str(id_list[i])]["bets"])
 
     await ctx.send("{}".format(output))
+
+
+async def pay_points(from_user, to_user, amount, json_file, update_json):
+    update_json(str(from_user), "points", json_file[str(from_user)]["points"] - amount)
+    update_json(str(to_user), "points", json_file[str(to_user)]["points"] + amount)
 
 
 async def add_points(bot, update_json, json_file):

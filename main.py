@@ -2,7 +2,7 @@ import datetime
 import time
 from os.path import exists
 
-from colorama import Fore, Back
+from colorama import Fore
 from time import sleep
 from discord.ext import commands
 
@@ -26,6 +26,7 @@ NOAH_ID = 196360954160742400
 ID_LIST = [DAVID_ID, MORGAN_ID, QUINN_ID, JACOB_ID, AUSTIN_ID, BEN_ID, JOSH_ID, NOAH_ID]
 
 global json_file
+global price_file
 
 bot = commands.Bot(command_prefix="!ob ")
 
@@ -41,10 +42,16 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=game)
 
     with open('settings.json', 'r') as f:
-        data = json.load(f)
+        settings_data = json.load(f)
+
+    with open('sound_prices.json', 'r') as f:
+        price_data = json.load(f)
 
     global json_file
-    json_file = data
+    json_file = settings_data
+
+    global price_file
+    price_file = price_data
 
     bot.loop.create_task(gamble.add_points(bot, update_json, json_file))
 
@@ -108,11 +115,54 @@ async def on_voice_state_update(member, before, after):
                 return
 
             await play_sound(member, "downloads/{}".format(json_member["file_name"]))
+            log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
+                                                     Fore.YELLOW + after.channel.name + Fore.RESET))
 
 
 @bot.command(aliases=["points"])
 async def say_points(ctx):
     await gamble.points(ctx, bot, json_file, ID_LIST)
+
+
+@bot.command()
+async def shop(ctx):
+    with open('sound_prices.json', 'r') as f:
+        data = json.load(f)
+
+        string = "Use *!ob play {Song Name}* to play the sound\n"
+
+        for row in data:
+            string += "> Name: **{}** | Price: **{}**\n".format(row, data[row]["price"])
+
+        await ctx.send(string)
+
+
+@bot.command(aliases=["play"])
+async def pay_to_play(ctx, sound_name):
+    current_points = get_json(ctx.message.author.id, "points")
+    cost = get_sound_price(sound_name)
+
+    if current_points >= cost:
+        update_json(ctx.message.author.id, "points", current_points - cost)
+        await play_sound(ctx.message.author, "downloads/pay_to_play/{}.mp3".format(sound_name))
+
+        log("Playing {}.mp3{}".format(Fore.YELLOW + sound_name, Fore.RESET))
+    else:
+        await ctx.send("Aha you're poor. You're missing {} points".format(
+            get_sound_price(sound_name) - get_json(ctx.message.author.id, "points")))
+
+
+@bot.command(aliases=['give'])
+async def pay(ctx, payee, amount):
+    if len(payee) > 0 and len(amount) > 0 and int(amount) > 0:
+
+        if get_json(ctx.message.author.id, "points") > int(amount):
+            await gamble.pay_points(ctx.message.author.id, payee.strip("<@>"), int(amount), json_file, update_json)
+            await ctx.send(
+                "**{}** paid **{}** - **{}** points".format(
+                    await gamble.get_user_from_id(bot, ctx.message.author.id),
+                    await gamble.get_user_from_id(bot, payee.strip("<@>")),
+                    amount))
 
 
 # Helper functions
@@ -154,17 +204,31 @@ def update_json(member_id, field, value):
             json.dump(json_file, f, indent=4)
 
 
+def get_json(member_id, field):
+    global json_file
+    json_member = json_file[str(member_id)]
+
+    if json_member is not None:
+        return json_member[field]
+    return None
+
+
+def get_sound_price(sound_name):
+    return price_file[sound_name]["price"]
+
+
 async def play_sound(member, source):
     if exists(source):
         singing_channel = member.voice.channel
-        await singing_channel.connect()
 
-        log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE, Fore.YELLOW + singing_channel.name + Fore.RESET))
+        if singing_channel:
+            await singing_channel.connect()
 
-        bot.voice_clients[0].play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
+            bot.voice_clients[0].play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
 
-        sleep(5)
+            sleep(5)
 
-        await bot.voice_clients[0].disconnect()
+            await bot.voice_clients[0].disconnect()
+
 
 bot.run(DISCORD_TOKEN)

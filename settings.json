@@ -1,49 +1,49 @@
 {
     "416415708323512341": {
         "file_name": "david_intro.mp3",
-        "points": 3703,
-        "bets": 1041,
+        "points": 200,
+        "bets": 1051,
         "play_on_enter": true
     },
     "325111288764170240": {
         "file_name": "quinn_intro.mp3",
-        "points": 28035,
+        "points": 30647,
         "bets": 0,
         "play_on_enter": true
     },
     "429659989750317076": {
         "file_name": "morgan_intro.mp3",
-        "points": 51682,
+        "points": 11830,
         "bets": 0,
         "play_on_enter": true
     },
     "416415943896596493": {
         "file_name": "jacob_intro.mp3",
-        "points": 100,
-        "bets": 195,
+        "points": 299,
+        "bets": 200,
         "play_on_enter": true
     },
     "382324502199271424": {
         "file_name": "josh_intro.mp3",
-        "points": -3171,
-        "bets": 178,
+        "points": 100,
+        "bets": 445,
         "play_on_enter": true
     },
     "253305173118550026": {
         "file_name": "austin_intro.mp3",
-        "points": 4075,
-        "bets": 64,
+        "points": 1165,
+        "bets": 90,
         "play_on_enter": true
     },
     "349986879615008778": {
         "file_name": "ben_intro.mp3",
-        "points": 196,
+        "points": 1397,
         "bets": 11,
         "play_on_enter": true
     },
     "196360954160742400": {
         "file_name": "noah_intro.mp3",
-        "points": 470,
+        "points": 4913,
         "bets": 200,
         "play_on_enter": false
     }
