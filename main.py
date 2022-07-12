@@ -53,6 +53,8 @@ async def on_ready():
     global price_file
     price_file = price_data
 
+    await gamble.init()
+
     bot.loop.create_task(gamble.add_points(bot, update_json, json_file))
 
 
@@ -163,6 +165,11 @@ async def pay(ctx, payee, amount):
                     await gamble.get_user_from_id(bot, ctx.message.author.id),
                     await gamble.get_user_from_id(bot, payee.strip("<@>")),
                     amount))
+
+
+@bot.command()
+async def wan(ctx):
+    await play_sound(ctx.message.author, "downloads/hello_there.mp3")
 
 
 # Helper functions
