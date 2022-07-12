@@ -87,7 +87,7 @@ async def gamble(ctx, bot, wager, json_file, update_json, id_list):
                                                                                                    member["points"]))
         await ctx.send("The jackpot is now **{}**".format(get_jackpot_amount()))
 
-    elif 0.90 < value <= 1:
+    elif 0.90 < value < 0.99999:
         gifted_member = random.choice(id_list)
 
         update_json(author.id, "points", member["points"] - wager)
@@ -98,6 +98,11 @@ async def gamble(ctx, bot, wager, json_file, update_json, id_list):
                        "and **{}** has **{}** points"
                        .format(author, wager, gifted_member_name, member["points"], gifted_member_name,
                                json_file[str(gifted_member)]["points"]))
+
+    elif value >= 0.99999:
+        update_json(author.id, "points", member["points"] + get_jackpot_amount())
+        await ctx.send("**Congrats!** You've won the jackpot of **{}** points! Your current balance is **{}**".format(get_jackpot_amount(), member["points"]))
+        reset_jackpot()
 
     if json_file[str(author.id)]["points"] <= 0:
         await ctx.send("Congratulations, you've lost everything! You've been reset to 100 points")
@@ -130,6 +135,13 @@ async def pay_points(from_user, to_user, amount, json_file, update_json):
 
 def add_to_jackpot(amount):
     jackpot_json["jackpot"]["points"] += amount
+
+    with open('jackpot.json', 'w') as f:
+        json.dump(jackpot_json, f, indent=4)
+
+
+def reset_jackpot():
+    jackpot_json["jackpot"]["points"] = 0
 
     with open('jackpot.json', 'w') as f:
         json.dump(jackpot_json, f, indent=4)
