@@ -5,7 +5,6 @@ import discord
 import socket
 
 global process
-process = None
 
 
 async def start(ctx, bot):
@@ -18,7 +17,6 @@ async def start(ctx, bot):
     else:
         os.chdir("C:\\Users\\Turtl\\Desktop\\ModdedServer")
 
-        global process
         process = subprocess.Popen(['start.bat'], stdin=subprocess.PIPE, encoding='utf8')
 
         time.sleep(50)

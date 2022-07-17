@@ -66,7 +66,7 @@ async def on_ready():
 
 
 @bot.command(pass_context=True)
-async def say(ctx, message):
+async def say(ctx, *message):
     await ctx.message.delete()
     await ctx.send(message)
 
@@ -143,7 +143,7 @@ async def shop(ctx):
     with open('item_prices.json', 'r') as f:
         data = json.load(f)
 
-        string = "Use *!ob play {Song Name}* to play the sound\n"
+        string = "Use *!ob play {Sound Name}* to play the sound\n"
 
         for row in data:
             string += "> Name: **{}** | Price: **{}**\n".format(row, data[row]["price"])
