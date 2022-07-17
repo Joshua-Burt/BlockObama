@@ -45,14 +45,14 @@ async def on_ready():
     game = discord.Game("not Minecraft")
     await bot.change_presence(status=discord.Status.online, activity=game)
 
-    with open('settings.json', 'r') as f:
-        settings_data = json.load(f)
+    with open('users.json', 'r') as f:
+        user_data = json.load(f)
 
     with open('sound_prices.json', 'r') as f:
         price_data = json.load(f)
 
     global json_file
-    json_file = settings_data
+    json_file = user_data
 
     global price_file
     price_file = price_data
@@ -229,7 +229,7 @@ def update_json(member_id, field, value):
         json_file[str(member_id)][field] = value
 
         # Dump into file
-        with open('settings.json', 'w') as f:
+        with open('users.json', 'w') as f:
             json.dump(json_file, f, indent=4)
 
 

@@ -8,7 +8,6 @@ global process
 process = None
 
 
-
 async def start(ctx, bot):
     global process
     status = process
@@ -47,6 +46,7 @@ async def stop(ctx):
     global process
     if process:
         await server_command("stop")
+        await ctx.send("Stopped the server")
         process = None
         os.chdir("C:\\Users\\Turtl\\PycharmProjects\\BlockObama 2.0")
     else:
