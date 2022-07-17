@@ -48,7 +48,7 @@ async def on_ready():
     with open('users.json', 'r') as f:
         user_data = json.load(f)
 
-    with open('sound_prices.json', 'r') as f:
+    with open('item_prices.json', 'r') as f:
         price_data = json.load(f)
 
     global json_file
@@ -140,7 +140,7 @@ async def say_points(ctx):
 
 @bot.command()
 async def shop(ctx):
-    with open('sound_prices.json', 'r') as f:
+    with open('item_prices.json', 'r') as f:
         data = json.load(f)
 
         string = "Use *!ob play {Song Name}* to play the sound\n"
