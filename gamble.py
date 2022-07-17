@@ -2,6 +2,8 @@ import asyncio
 import random
 import json
 
+from discord.ext import tasks
+
 global jackpot_json
 
 
@@ -46,13 +48,13 @@ async def gamble(ctx, bot, wager, json_file, update_json, id_list):
             "**{}** has gambled **{}** and broke even. Their current balance is **{}**".format(author, wager,
                                                                                                member["points"]))
 
-    elif 0.15 < value <= 0.35:
+    elif 0.15 < value <= 0.30:
         update_json(author.id, "points", member["points"] + wager)
         await ctx.send(
             "**{}** has gambled **{}** and doubled their wager. Their current balance is **{}**".format(author, wager,
                                                                                                         member[
                                                                                                             "points"]))
-    elif 0.35 < value <= 0.45:
+    elif 0.30 < value <= 0.45:
         multiple = random.random()
         update_json(author.id, "points", member["points"] - wager + round(wager * multiple))
         add_to_jackpot(wager - round(wager * multiple))
@@ -151,22 +153,20 @@ def get_jackpot_amount():
     return jackpot_json["jackpot"]["points"]
 
 
+@tasks.loop(seconds=5, count=None, reconnect=True)
 async def add_points(bot, update_json, json_file):
     await bot.wait_until_ready()
 
-    while not bot.is_closed():
-        await asyncio.sleep(300)
+    channel = bot.get_channel(907101406488559646)
+    members = channel.members
 
-        channel = bot.get_channel(907101406488559646)
-        members = channel.members
+    for member in members:
+        if not member.bot and member.id != 196360954160742400:
+            update_json(member.id, "points", json_file[str(member.id)]["points"] + 100)
 
-        for member in members:
-            if not member.bot and member.id != 196360954160742400:
-                update_json(member.id, "points", json_file[str(member.id)]["points"] + 100)
+    afk_channel = bot.get_channel(910698924606652466)
+    afk_members = afk_channel.members
 
-        afk_channel = bot.get_channel(910698924606652466)
-        afk_members = afk_channel.members
-
-        for afk_member in afk_members:
-            if not afk_member.bot:
-                update_json(afk_member.id, "points", json_file[str(afk_member.id)]["points"] - 100)
+    for afk_member in afk_members:
+        if not afk_member.bot:
+            update_json(afk_member.id, "points", json_file[str(afk_member.id)]["points"] - 100)

@@ -73,5 +73,17 @@
 
   "that_boy_aint_right": {
     "price": 2000
+  },
+  
+  "lorne": {
+    "price": 10000
+  },
+  
+  "branch": {
+    "price": 3500
+  },
+  
+  "imfree": {
+	"price": 5500
   }
 }

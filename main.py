@@ -1,4 +1,7 @@
+import asyncio
 import datetime
+import os
+import sys
 import time
 from os.path import exists
 
@@ -27,6 +30,7 @@ ID_LIST = [DAVID_ID, MORGAN_ID, QUINN_ID, JACOB_ID, AUSTIN_ID, BEN_ID, JOSH_ID, 
 
 global json_file
 global price_file
+points_loop = None
 
 bot = commands.Bot(command_prefix="!ob ")
 
@@ -55,7 +59,10 @@ async def on_ready():
 
     await gamble.init()
 
-    bot.loop.create_task(gamble.add_points(bot, update_json, json_file))
+    global points_loop
+    points_loop = bot.loop.create_task(gamble.add_points(bot, update_json, json_file))
+
+    gamble.add_points.start(bot, update_json, json_file)
 
 
 @bot.command(pass_context=True)
@@ -87,11 +94,16 @@ async def bet(ctx, wager):
         update_json(str(ctx.message.author.id), "bets", json_file[str(ctx.message.author.id)]["bets"] + 1)
 
 
-@bot.command()
-async def start(ctx):
+@bot.command(aliases=['start server', 'start'])
+async def start_server(ctx):
     log("Starting server...")
     await ctx.send("Starting server...")
     await mcserver.start(ctx, bot)
+
+
+@bot.command(aliases=['stop server', 'stop'])
+async def stop_server(ctx):
+    await mcserver.stop(ctx)
 
 
 @bot.command(name='intro', description='Toggle intro on entering voice chat')
@@ -172,6 +184,16 @@ async def wan(ctx):
     await play_sound(ctx.message.author, "downloads/hello_there.mp3")
 
 
+@bot.command()
+@commands.is_owner()
+async def restart(ctx):
+    # await bot.close()
+    log("Restarting...")
+    sys.tracebacklimit = 0
+    exit()
+    # os.execv(sys.executable, ['py3'] + sys.argv)
+
+
 # Helper functions
 
 # Take the last message sent and repeats it with alternating capitals
@@ -231,7 +253,12 @@ async def play_sound(member, source):
         if singing_channel:
             await singing_channel.connect()
 
-            bot.voice_clients[0].play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
+            voice = bot.voice_clients[0]
+            voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
+
+            voice.pause()
+            await asyncio.sleep(0.5)
+            voice.resume()
 
             sleep(5)
 

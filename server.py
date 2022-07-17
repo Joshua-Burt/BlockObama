@@ -1,31 +1,56 @@
 import os
-import socket
 import subprocess
 import time
 import discord
+import socket
+
+global process
+process = None
+
 
 
 async def start(ctx, bot):
-    status = await check_server_status()
+    global process
+    status = process
 
     if status:
         await ctx.send("The server is already running")
         print("Server is already running")
     else:
-        os.chdir("C:\\Users\\Turtl\\Desktop\\Minecraft Forge Server")
+        os.chdir("C:\\Users\\Turtl\\Desktop\\ModdedServer")
 
-        process = subprocess.Popen(['run.bat'], stdin=subprocess.PIPE)
+        global process
+        process = subprocess.Popen(['start.bat'], stdin=subprocess.PIPE, encoding='utf8')
 
-        time.sleep(5)
+        time.sleep(50)
 
-        while not await check_server_status():
-            print("Checking server status...")
-            time.sleep(2)
+        os.chdir("C:\\Users\\Turtl\\PycharmProjects\\BlockObama 2.0")
+
+        # TODO: Check for server being online
+        # loop_count = 0
+        # while not await check_server_status():
+        #     print("Checking server status...")
+        #     time.sleep(2)
+        #     loop_count += 2
+        #
+        #     if loop_count == 30:
+        #         ctx.send("I can't tell if the server is running or not, but it's been long enough that it probably is")
+        #         break
 
         game = discord.Game("Minecraft")
         await bot.change_presence(status=discord.Status.online, activity=game)
 
         await ctx.send("Server started, probably")
+
+
+async def stop(ctx):
+    global process
+    if process:
+        await server_command("stop")
+        process = None
+        os.chdir("C:\\Users\\Turtl\\PycharmProjects\\BlockObama 2.0")
+    else:
+        await ctx.send("The server isn't running")
 
 
 async def ping_ip(ip, port):
@@ -42,6 +67,11 @@ async def ping_ip(ip, port):
     else:
         print("{}:{} is not open".format(ip, port))
         return False
+
+
+async def server_command(command):
+    global process
+    output = process.communicate(command, timeout=10)[0]
 
 
 async def check_server_status():
