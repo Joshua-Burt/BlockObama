@@ -1,24 +1,22 @@
 import asyncio
 import datetime
-import random
 import sys
 import time
-from os.path import exists
+import json
+import discord
 
+from os.path import exists
 from colorama import Fore
 from time import sleep
 from discord.ext import commands
+
 import json_utils
-
-import discord
-
 import roll as rl
 import server as mcserver
 import gamble
-import json
 
 # Constants
-DISCORD_TOKEN = 'Nzk3NjUxNTc0OTQ3MTg0NzEw.X_pk6w.uO-sRng69YLuWrIBDEr9KHNLDfY'
+DISCORD_TOKEN = ''
 DAVID_ID = 416415708323512341
 MORGAN_ID = 429659989750317076
 QUINN_ID = 325111288764170240
@@ -50,6 +48,11 @@ async def on_ready():
     global points_loop
     points_loop = bot.loop.create_task(gamble.add_points(bot))
     gamble.add_points.start(bot)
+
+
+@bot.event
+async def on_member_join(member):
+    json_utils.add_user(member.id)
 
 
 @bot.command(pass_context=True)
@@ -168,11 +171,9 @@ async def wan(ctx):
 @bot.command()
 @commands.is_owner()
 async def restart(ctx):
-    # await bot.close()
     log("Restarting...")
     sys.tracebacklimit = 0
     exit()
-    # os.execv(sys.executable, ['py3'] + sys.argv)
 
 
 @bot.listen('on_message')

@@ -59,6 +59,10 @@ def get_user_field(member_id, field):
     return None
 
 
+def pick_random_user():
+    return random.choice(users_file)
+
+
 # SOUNDS JSON
 def get_sound_price(sound_name):
     return price_file[sound_name]["price"]
