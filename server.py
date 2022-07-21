@@ -5,13 +5,13 @@ import discord
 import socket
 
 global process
+process = None
 
 
 async def start(ctx, bot):
     global process
-    status = process
 
-    if status:
+    if process:
         await ctx.send("The server is already running")
         print("Server is already running")
     else:

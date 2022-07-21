@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-import os
+import random
 import sys
 import time
 from os.path import exists
@@ -30,6 +30,7 @@ ID_LIST = [DAVID_ID, MORGAN_ID, QUINN_ID, JACOB_ID, AUSTIN_ID, BEN_ID, JOSH_ID, 
 
 global json_file
 global price_file
+global youre_welcomes
 points_loop = None
 
 bot = commands.Bot(command_prefix="!ob ")
@@ -51,11 +52,17 @@ async def on_ready():
     with open('item_prices.json', 'r') as f:
         price_data = json.load(f)
 
+    with open('youre_welcome.txt', 'r') as f:
+        youre_welcomes_data = f.read().split("\n")
+
     global json_file
     json_file = user_data
 
     global price_file
     price_file = price_data
+
+    global youre_welcomes
+    youre_welcomes = youre_welcomes_data
 
     await gamble.init()
 
@@ -68,7 +75,7 @@ async def on_ready():
 @bot.command(pass_context=True)
 async def say(ctx, *message):
     await ctx.message.delete()
-    await ctx.send(message)
+    await ctx.send(' '.join(message))
 
 
 @bot.command()
@@ -194,6 +201,13 @@ async def restart(ctx):
     # os.execv(sys.executable, ['py3'] + sys.argv)
 
 
+@bot.listen('on_message')
+async def thanks(message):
+    thank_you_messages = ['thanks obama', 'thank you obama', 'thx obama', 'tanks', 'ty obama', 'thank u obama']
+    if any(x in message.content.lower() for x in thank_you_messages):
+        await message.channel.send(await get_random_youre_welcome())
+
+
 # Helper functions
 
 # Take the last message sent and repeats it with alternating capitals
@@ -210,6 +224,11 @@ async def mockify(in_str):
         if i != ' ':
             case = not case
     return new_string
+
+
+async def get_random_youre_welcome():
+    global youre_welcomes
+    return random.choice(youre_welcomes)
 
 
 def timestamp_to_readable(timestamp):
