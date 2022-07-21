@@ -1,4 +1,3 @@
-import asyncio
 import random
 import json
 import json_utils
@@ -6,6 +5,7 @@ import json_utils
 from discord.ext import tasks
 
 global jackpot_json
+global id_list
 
 
 async def init():
@@ -13,8 +13,12 @@ async def init():
         global jackpot_json
         jackpot_json = json.load(f)
 
+    with open('json_files/users.json', 'r') as f:
+        global id_list
+        id_list = list(json.load(f).keys())
 
-async def gamble(ctx, bot, wager, id_list):
+
+async def gamble(ctx, bot, wager):
     if not wager.isnumeric() and wager != "all":
         await ctx.send("What")
         return
@@ -123,7 +127,7 @@ async def get_user_from_id(bot, user_id):
     return name
 
 
-async def points(ctx, bot, id_list):
+async def points(ctx, bot):
     output = ""
     for i in range(len(id_list)):
         username = await get_user_from_id(bot, id_list[i])
@@ -143,15 +147,15 @@ async def pay_points(from_user, to_user, amount):
 def add_to_jackpot(amount):
     jackpot_json["jackpot"]["points"] += amount
 
-    with open('json_files/jackpot.json', 'w') as f:
-        json.dump(jackpot_json, f, indent=4)
+    with open('json_files/jackpot.json', 'w') as file:
+        json.dump(jackpot_json, file, indent=4)
 
 
 def reset_jackpot():
     jackpot_json["jackpot"]["points"] = 0
 
-    with open('json_files/jackpot.json', 'w') as f:
-        json.dump(jackpot_json, f, indent=4)
+    with open('json_files/jackpot.json', 'w') as file:
+        json.dump(jackpot_json, file, indent=4)
 
 
 def get_jackpot_amount():

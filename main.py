@@ -21,19 +21,9 @@ with open('json_files/config.json', 'r') as f:
 
 # Constants
 DISCORD_TOKEN = config["token"]
-DAVID_ID = 416415708323512341
-MORGAN_ID = 429659989750317076
-QUINN_ID = 325111288764170240
-JACOB_ID = 416415943896596493
-AUSTIN_ID = 253305173118550026
-BEN_ID = 349986879615008778
-JOSH_ID = 382324502199271424
-NOAH_ID = 196360954160742400
-ID_LIST = [DAVID_ID, MORGAN_ID, QUINN_ID, JACOB_ID, AUSTIN_ID, BEN_ID, JOSH_ID, NOAH_ID]
+bot = commands.Bot(command_prefix=config["prefix"])
 
 points_loop = None
-
-bot = commands.Bot(command_prefix=config["prefix"])
 
 
 @bot.event
@@ -84,7 +74,7 @@ async def roll(ctx, input_string):
 @bot.command(aliases=["gamble"])
 async def bet(ctx, wager):
     if ctx.channel.id == 993918882228207717:
-        await gamble.gamble(ctx, bot, wager, ID_LIST)
+        await gamble.gamble(ctx, bot, wager)
 
         author_id = ctx.message.author.id
         json_utils.update_user(author_id, "bets", json_utils.get_user_field(author_id, "bets") + 1)
@@ -123,7 +113,7 @@ async def on_voice_state_update(member, before, after):
 
 @bot.command(aliases=["points"])
 async def say_points(ctx):
-    await gamble.points(ctx, bot, ID_LIST)
+    await gamble.points(ctx, bot)
 
 
 @bot.command()
