@@ -10,13 +10,17 @@ from colorama import Fore
 from time import sleep
 from discord.ext import commands
 
+# Local Files
 import json_utils
 import roll as rl
 import server as mcserver
 import gamble
 
+with open('json_files/config.json', 'r') as f:
+    config = json.load(f)
+
 # Constants
-DISCORD_TOKEN = ''
+DISCORD_TOKEN = config["token"]
 DAVID_ID = 416415708323512341
 MORGAN_ID = 429659989750317076
 QUINN_ID = 325111288764170240
@@ -29,7 +33,7 @@ ID_LIST = [DAVID_ID, MORGAN_ID, QUINN_ID, JACOB_ID, AUSTIN_ID, BEN_ID, JOSH_ID, 
 
 points_loop = None
 
-bot = commands.Bot(command_prefix="!ob ")
+bot = commands.Bot(command_prefix=config["prefix"])
 
 
 @bot.event
@@ -90,7 +94,7 @@ async def bet(ctx, wager):
 async def start_server(ctx):
     log("Starting server...")
     await ctx.send("Starting server...")
-    await mcserver.start(ctx, bot)
+    await mcserver.start(ctx, bot, config["server_path"])
 
 
 @bot.command(aliases=['stop server', 'stop'])
@@ -112,7 +116,7 @@ async def on_voice_state_update(member, before, after):
         if json_utils.get_user_field(member.id, "play_on_enter") is None:
             return
 
-        await play_sound(member, "downloads/{}".format(json_utils.get_user_field(member.id, "file_name")))
+        await play_sound(member, "downloads/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
         log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
                                                  Fore.YELLOW + after.channel.name + Fore.RESET))
 
@@ -124,8 +128,8 @@ async def say_points(ctx):
 
 @bot.command()
 async def shop(ctx):
-    with open('json_files/item_prices.json', 'r') as f:
-        data = json.load(f)
+    with open('json_files/item_prices.json', 'r') as file:
+        data = json.load(file)
 
         string = "Use *!ob play {Sound Name}* to play the sound\n"
 

@@ -8,14 +8,14 @@ global process
 process = None
 
 
-async def start(ctx, bot):
+async def start(ctx, bot, server_path):
     global process
 
     if process:
         await ctx.send("The server is already running")
         print("Server is already running")
     else:
-        os.chdir("C:\\Users\\Turtl\\Desktop\\ModdedServer")
+        os.chdir(server_path)
 
         process = subprocess.Popen(['start.bat'], stdin=subprocess.PIPE, encoding='utf8')
 

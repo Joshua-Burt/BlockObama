@@ -6,7 +6,7 @@ global price_file
 global youre_welcomes
 
 
-def init():
+async def init():
     with open('json_files/users.json', 'r') as f:
         user_data = json.load(f)
 
