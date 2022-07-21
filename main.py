@@ -8,6 +8,7 @@ from os.path import exists
 from colorama import Fore
 from time import sleep
 from discord.ext import commands
+import json_utils
 
 import discord
 
@@ -28,9 +29,6 @@ JOSH_ID = 382324502199271424
 NOAH_ID = 196360954160742400
 ID_LIST = [DAVID_ID, MORGAN_ID, QUINN_ID, JACOB_ID, AUSTIN_ID, BEN_ID, JOSH_ID, NOAH_ID]
 
-global json_file
-global price_file
-global youre_welcomes
 points_loop = None
 
 bot = commands.Bot(command_prefix="!ob ")
@@ -46,30 +44,12 @@ async def on_ready():
     game = discord.Game("not Minecraft")
     await bot.change_presence(status=discord.Status.online, activity=game)
 
-    with open('users.json', 'r') as f:
-        user_data = json.load(f)
-
-    with open('item_prices.json', 'r') as f:
-        price_data = json.load(f)
-
-    with open('youre_welcome.txt', 'r') as f:
-        youre_welcomes_data = f.read().split("\n")
-
-    global json_file
-    json_file = user_data
-
-    global price_file
-    price_file = price_data
-
-    global youre_welcomes
-    youre_welcomes = youre_welcomes_data
-
+    await json_utils.init()
     await gamble.init()
 
     global points_loop
-    points_loop = bot.loop.create_task(gamble.add_points(bot, update_json, json_file))
-
-    gamble.add_points.start(bot, update_json, json_file)
+    points_loop = bot.loop.create_task(gamble.add_points(bot))
+    gamble.add_points.start(bot)
 
 
 @bot.command(pass_context=True)
@@ -97,8 +77,10 @@ async def roll(ctx, input_string):
 @bot.command(aliases=["gamble"])
 async def bet(ctx, wager):
     if ctx.channel.id == 993918882228207717:
-        await gamble.gamble(ctx, bot, wager, json_file, update_json, ID_LIST)
-        update_json(str(ctx.message.author.id), "bets", json_file[str(ctx.message.author.id)]["bets"] + 1)
+        await gamble.gamble(ctx, bot, wager, ID_LIST)
+
+        author_id = ctx.message.author.id
+        json_utils.update_user(author_id, "bets", json_utils.get_user_field(author_id, "bets") + 1)
 
 
 @bot.command(aliases=['start server', 'start'])
@@ -115,13 +97,8 @@ async def stop_server(ctx):
 
 @bot.command(name='intro', description='Toggle intro on entering voice chat')
 async def toggle_intro(ctx):
-    if str(ctx.message.author.id) not in json_file:
-        ctx.send("You don't have an intro at the moment")
-        return
-
-    new_play_on_enter = not json_file[str(ctx.message.author.id)]["play_on_enter"]
-
-    update_json(ctx.message.author.id, "play_on_enter", new_play_on_enter)
+    new_play_on_enter = not json_utils.get_user_field(ctx.message.author.id, "play_on_enter")
+    json_utils.update_user(ctx.message.author.id, "play_on_enter", new_play_on_enter)
 
     await ctx.send(("Your intro is now ON" if new_play_on_enter else "Your intro is now OFF"))
 
@@ -129,25 +106,22 @@ async def toggle_intro(ctx):
 @bot.event
 async def on_voice_state_update(member, before, after):
     if not before.channel and after.channel and not member.bot:
+        if json_utils.get_user_field(member.id, "play_on_enter") is None:
+            return
 
-        json_member = json_file[str(member.id)]
-        if json_member is not None:
-            if not json_member["play_on_enter"]:
-                return
-
-            await play_sound(member, "downloads/{}".format(json_member["file_name"]))
-            log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
-                                                     Fore.YELLOW + after.channel.name + Fore.RESET))
+        await play_sound(member, "downloads/{}".format(json_utils.get_user_field(member.id, "file_name")))
+        log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
+                                                 Fore.YELLOW + after.channel.name + Fore.RESET))
 
 
 @bot.command(aliases=["points"])
 async def say_points(ctx):
-    await gamble.points(ctx, bot, json_file, ID_LIST)
+    await gamble.points(ctx, bot, ID_LIST)
 
 
 @bot.command()
 async def shop(ctx):
-    with open('item_prices.json', 'r') as f:
+    with open('json_files/item_prices.json', 'r') as f:
         data = json.load(f)
 
         string = "Use *!ob play {Sound Name}* to play the sound\n"
@@ -160,25 +134,25 @@ async def shop(ctx):
 
 @bot.command(aliases=["play"])
 async def pay_to_play(ctx, sound_name):
-    current_points = get_json(ctx.message.author.id, "points")
-    cost = get_sound_price(sound_name)
+    current_points = json_utils.get_user_field(ctx.message.author.id, "points")
+    cost = json_utils.get_sound_price(sound_name)
 
     if current_points >= cost:
-        update_json(ctx.message.author.id, "points", current_points - cost)
+        json_utils.update_user(ctx.message.author.id, "points", current_points - cost)
         await play_sound(ctx.message.author, "downloads/pay_to_play/{}.mp3".format(sound_name))
 
         log("Playing {}.mp3{}".format(Fore.YELLOW + sound_name, Fore.RESET))
     else:
         await ctx.send("Aha you're poor. You're missing {} points".format(
-            get_sound_price(sound_name) - get_json(ctx.message.author.id, "points")))
+            json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.message.author.id, "points")))
 
 
 @bot.command(aliases=['give'])
 async def pay(ctx, payee, amount):
     if len(payee) > 0 and len(amount) > 0 and int(amount) > 0:
 
-        if get_json(ctx.message.author.id, "points") > int(amount):
-            await gamble.pay_points(ctx.message.author.id, payee.strip("<@>"), int(amount), json_file, update_json)
+        if json_utils.get_user_field(ctx.message.author.id, "points") > int(amount):
+            await gamble.pay_points(ctx.message.author.id, payee.strip("<@>"), int(amount))
             await ctx.send(
                 "**{}** paid **{}** - **{}** points".format(
                     await gamble.get_user_from_id(bot, ctx.message.author.id),
@@ -205,7 +179,7 @@ async def restart(ctx):
 async def thanks(message):
     thank_you_messages = ['thanks obama', 'thank you obama', 'thx obama', 'tanks', 'ty obama', 'thank u obama']
     if any(x in message.content.lower() for x in thank_you_messages):
-        await message.channel.send(await get_random_youre_welcome())
+        await message.channel.send(await json_utils.get_random_youre_welcome())
 
 
 # Helper functions
@@ -226,11 +200,6 @@ async def mockify(in_str):
     return new_string
 
 
-async def get_random_youre_welcome():
-    global youre_welcomes
-    return random.choice(youre_welcomes)
-
-
 def timestamp_to_readable(timestamp):
     value = datetime.datetime.fromtimestamp(timestamp)
     return value.strftime('%Y-%m-%d %H:%M:%S -')
@@ -238,31 +207,6 @@ def timestamp_to_readable(timestamp):
 
 def log(input_str):
     print(Fore.RESET + timestamp_to_readable(time.time()), Fore.WHITE + input_str)
-
-
-def update_json(member_id, field, value):
-    global json_file
-    json_member = json_file[str(member_id)]
-
-    if json_member is not None:
-        json_file[str(member_id)][field] = value
-
-        # Dump into file
-        with open('users.json', 'w') as f:
-            json.dump(json_file, f, indent=4)
-
-
-def get_json(member_id, field):
-    global json_file
-    json_member = json_file[str(member_id)]
-
-    if json_member is not None:
-        return json_member[field]
-    return None
-
-
-def get_sound_price(sound_name):
-    return price_file[sound_name]["price"]
 
 
 async def play_sound(member, source):
