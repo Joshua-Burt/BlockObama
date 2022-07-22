@@ -33,6 +33,7 @@ config.json
     "prefix": "!",
     "token": "Nzk3NjUxNTDUMMYDATA4dNOTAREALKEYxfdT4hT",
     "server_path": "C:\\Users\\UserName\\Desktop\\Server",
+    "gamble_channel": 7410298300501223,
     "voice_channel": 9192304442112002,
     "afk_channel": 91932002025578199
 }
@@ -40,5 +41,6 @@ config.json
 prefix - the prefix the bot listens for to know its a command
 token - the Discord bot's token
 server_path - the path to a Minecraft server with a start.bat in it
+gamble_channel - channel id of a text channel that users can use the bet command
 voice_channel - channel id of a voice channel that users can gain points in
 afk_channel - channel id of a voice channel that users can lose points in

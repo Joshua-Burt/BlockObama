@@ -42,8 +42,8 @@ async def on_ready():
     await gamble.init()
 
     global points_loop
-    points_loop = bot.loop.create_task(gamble.add_points(bot))
-    gamble.add_points.start(bot)
+    points_loop = bot.loop.create_task(gamble.add_points(bot, config["voice_channel"], config["afk_channel"]))
+    gamble.add_points.start(bot, config["voice_channel"], config["afk_channel"])
 
 
 @bot.event
@@ -75,7 +75,7 @@ async def roll(ctx, input_string):
 
 @bot.command(aliases=["gamble"])
 async def bet(ctx, wager):
-    if ctx.channel.id == 993918882228207717:
+    if ctx.channel.id == config["gamble_channel"]:
         await gamble.gamble(ctx, bot, wager)
 
         author_id = ctx.message.author.id
