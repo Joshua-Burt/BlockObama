@@ -1,3 +1,5 @@
+__author__ = "Joshua Burt"
+
 import asyncio
 import datetime
 import sys
@@ -121,7 +123,7 @@ async def shop(ctx):
     with open('json_files/item_prices.json', 'r') as file:
         data = json.load(file)
 
-        string = "Use *!ob play {Sound Name}* to play the sound\n"
+        string = "Use **{} play *[Sound Name]*** to play the sound\n".format(config["prefix"])
 
         for row in data:
             string += "> Name: **{}** | Price: **{}**\n".format(row, data[row]["price"])
@@ -172,7 +174,7 @@ async def restart(ctx):
 
 @bot.listen('on_message')
 async def thanks(message):
-    thank_you_messages = ['thanks obama', 'thank you obama', 'thx obama', 'tanks', 'ty obama', 'thank u obama']
+    thank_you_messages = ['thanks obama', 'thank you obama', 'thx obama', 'tanks obama', 'ty obama', 'thank u obama']
     if any(x in message.content.lower() for x in thank_you_messages):
         await message.channel.send(await json_utils.get_random_youre_welcome())
 

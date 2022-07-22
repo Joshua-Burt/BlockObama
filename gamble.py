@@ -131,8 +131,8 @@ async def points(ctx, bot):
     output = ""
     for i in range(len(id_list)):
         username = await get_user_from_id(bot, id_list[i])
-        user_points = json_utils.get_user_field(i, "points")
-        user_bets = json_utils.get_user_field(i, "bets")
+        user_points = json_utils.get_user_field(id_list[i], "points")
+        user_bets = json_utils.get_user_field(id_list[i], "bets")
 
         output += "> **{}**:\n> \t{} Points \n> \t{} Bets\n".format(username, user_points, user_bets)
 
@@ -162,18 +162,18 @@ def get_jackpot_amount():
     return jackpot_json["jackpot"]["points"]
 
 
-@tasks.loop(seconds=5, count=None, reconnect=True)
-async def add_points(bot):
+@tasks.loop(minutes=5, count=None, reconnect=True)
+async def add_points(bot, voice_channel_id, afk_channel_id):
     await bot.wait_until_ready()
 
-    channel = bot.get_channel(907101406488559646)
+    channel = bot.get_channel(voice_channel_id)
     members = channel.members
 
     for member in members:
-        if not member.bot and member.id != 196360954160742400:
+        if not member.bot:
             json_utils.update_user(member.id, "points", json_utils.get_user_field(member.id, "points") + 100)
 
-    afk_channel = bot.get_channel(910698924606652466)
+    afk_channel = bot.get_channel(afk_channel_id)
     afk_members = afk_channel.members
 
     for afk_member in afk_members:

@@ -1,0 +1,44 @@
+Each of these are populated with dummy data.
+
+---
+users.json:
+
+{
+    "89012576234083201": {
+        "file_name": "intro_name.mp3",
+        "points": 1000,
+        "bets": 0,
+        "play_on_enter": true
+    },
+
+    "42139423464912033": {
+        "file_name": "other_intro_name.mp3",
+        "points": 1000,
+        "bets": 0,
+        "play_on_enter": true
+    }
+}
+
+key (the long number) - the id of the Discord member
+file_name - the file name for that member's intro sound
+points - the number of points the member currently has
+bets - number of point bets the user has made
+play_on_enter - whether the member's intro will play when they enter a voice channel
+
+
+---
+config.json
+
+{
+    "prefix": "!",
+    "token": "Nzk3NjUxNTDUMMYDATA4dNOTAREALKEYxfdT4hT",
+    "server_path": "C:\\Users\\UserName\\Desktop\\Server",
+    "voice_channel": 9192304442112002,
+    "afk_channel": 91932002025578199
+}
+
+prefix - the prefix the bot listens for to know its a command
+token - the Discord bot's token
+server_path - the path to a Minecraft server with a start.bat in it
+voice_channel - channel id of a voice channel that users can gain points in
+afk_channel - channel id of a voice channel that users can lose points in
