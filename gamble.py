@@ -102,11 +102,11 @@ async def gamble(ctx, bot, wager):
         gifted_member_name = await get_user_from_id(bot, gifted_member)
         gifted_member_points = json_utils.get_user_field(gifted_member, "points")
 
-        await ctx.send((result, "**{}'s** current balance is **{}**.\n**{}'s** current balance is **{}**."
-                        .format(author, author_curr_points, gifted_member_name, gifted_member_points)))
+        await ctx.send(' '.join((result, "\n**{}'s** current balance is **{}**.\n**{}'s** current balance is **{}**."
+                                .format(author, author_curr_points, gifted_member_name, gifted_member_points))))
     # General Output
     else:
-        await ctx.send((result, "Their current balance is **{}**".format(author_curr_points)))
+        await ctx.send(' '.join((result, "Their current balance is **{}**".format(author_curr_points))))
 
     # Ran outta money
     if author_curr_points <= 0:
@@ -170,7 +170,7 @@ async def add_points(bot, voice_channel_id, afk_channel_id):
     members = channel.members
 
     for member in members:
-        if not member.bot:
+        if not member.bot and member.id in id_list:
             json_utils.update_user(member.id, "points", json_utils.get_user_field(member.id, "points") + 100)
 
     afk_channel = bot.get_channel(afk_channel_id)
