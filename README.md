@@ -24,3 +24,6 @@ Having the bot control the Minecraft server was the original purpose, and it def
 ## Setup
 
 The file structure can be found in the docs folder, along with any important info regarding using the bot.
+
+## Note
+This bot is not without fault. The server portion is mostly reliable, however it is possible to cause data-loss/corruption rarely. It is recommended to make regular backups of any World files you have
