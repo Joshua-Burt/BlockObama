@@ -15,13 +15,14 @@ async def start(ctx, bot, server_path):
         await ctx.send("The server is already running")
         print("Server is already running")
     else:
+        working_directory = os.getcwd()
         os.chdir(server_path)
 
         process = subprocess.Popen(['start.bat'], stdin=subprocess.PIPE, encoding='utf8')
 
         time.sleep(50)
 
-        os.chdir("C:\\Users\\Turtl\\PycharmProjects\\BlockObama 2.0")
+        os.chdir(working_directory)
 
         # TODO: Check for server being online
         # loop_count = 0
@@ -33,9 +34,6 @@ async def start(ctx, bot, server_path):
         #     if loop_count == 30:
         #         ctx.send("I can't tell if the server is running or not, but it's been long enough that it probably is")
         #         break
-
-        game = discord.Game("Minecraft")
-        await bot.change_presence(status=discord.Status.online, activity=game)
 
         await ctx.send("Server started, probably")
 

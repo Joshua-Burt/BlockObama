@@ -88,6 +88,9 @@ async def start_server(ctx):
     await ctx.send("Starting server...")
     await mcserver.start(ctx, bot, config["server_path"])
 
+    game = discord.Game("Minecraft")
+    await bot.change_presence(status=discord.Status.online, activity=game)
+
 
 @bot.command(aliases=['stop server', 'stop'])
 async def stop_server(ctx):

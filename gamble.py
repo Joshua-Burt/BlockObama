@@ -36,7 +36,7 @@ async def gamble(ctx, bot, wager):
         return
 
     if author_prev_points < wager:
-        await ctx.send("You don't have enough points. You currently have **{}** points".format(author_prev_points))
+        await ctx.send("You don't have enough points. You currently have **{:,}** points".format(author_prev_points))
         return
 
     value = random.random()
@@ -46,37 +46,37 @@ async def gamble(ctx, bot, wager):
 
     if value <= 0.05:
         json_utils.update_user(author.id, "points", author_prev_points + (wager * 2))
-        result = "**{}** has gambled **{}** and tripled their wager.".format(author, wager)
+        result = "**{}** has gambled **{:,}** and tripled their wager.".format(author, wager)
 
     elif 0.05 < value <= 0.15:
-        result = "**{}** has gambled **{}** and broke even.".format(author, wager)
+        result = "**{}** has gambled **{:,}** and broke even.".format(author, wager)
 
     elif 0.15 < value <= 0.30:
         json_utils.update_user(author.id, "points", author_prev_points + wager)
-        result = "**{}** has gambled **{}** and doubled their wager.".format(author, wager)
+        result = "**{}** has gambled **{:,}** and doubled their wager.".format(author, wager)
 
     elif 0.30 < value <= 0.45:
         multiple = random.random()
         json_utils.update_user(author.id, "points", author_prev_points - wager + round(wager * multiple))
         add_to_jackpot(wager - round(wager * multiple))
-        result = "**{}** has gambled **{}** and got {:.2f}x back.".format(author, wager, multiple)
+        result = "**{}** has gambled **{:,}** and got {:.2f}x back.".format(author, wager, multiple)
         jackpot_changed = True
 
     elif 0.45 < value <= 0.6:
         json_utils.update_user(author.id, "points", author_prev_points - round(wager / 2))
         add_to_jackpot(round(wager / 2))
-        result = "**{}** has gambled **{}** and lost half of it.".format(author, wager)
+        result = "**{}** has gambled **{:,}** and lost half of it.".format(author, wager)
         jackpot_changed = True
 
     elif 0.6 < value <= 0.85:
         multiple = 1 + random.random()
         json_utils.update_user(author.id, "points", author_prev_points - wager + round(wager * multiple))
-        result = "**{}** has gambled **{}** and gained {:.2f}x back.".format(author, wager, multiple)
+        result = "**{}** has gambled **{:,}** and gained {:.2f}x back.".format(author, wager, multiple)
 
     elif 0.85 < value <= 0.90:
         json_utils.update_user(author.id, "points", author_prev_points - wager)
         add_to_jackpot(round(wager))
-        result = "**{}** has gambled **{}** and lost all of it.".format(author, wager)
+        result = "**{}** has gambled **{:,}** and lost all of it.".format(author, wager)
         jackpot_changed = True
 
     elif 0.90 < value < 0.99999:
@@ -86,11 +86,11 @@ async def gamble(ctx, bot, wager):
         json_utils.update_user(gifted_member, "points", json_utils.get_user_field(gifted_member, "points") + wager)
         gifted_member_name = await get_user_from_id(bot, gifted_member)
 
-        result = "**{}** has gambled **{}** and has given it to **{}**.".format(author, wager, gifted_member_name)
+        result = "**{}** has gambled **{:,}** and has given it to **{}**.".format(author, wager, gifted_member_name)
 
     elif value >= 0.99999:
         json_utils.update_user(author.id, "points", author_prev_points + get_jackpot_amount())
-        result = "**Congrats!** You've won the jackpot of **{}** points!" \
+        result = "**Congrats!** You've won the jackpot of **{:,}** points!" \
             .format(get_jackpot_amount(), json_utils.get_user_field(author.id, "points"))
         reset_jackpot()
         jackpot_changed = True
@@ -102,11 +102,11 @@ async def gamble(ctx, bot, wager):
         gifted_member_name = await get_user_from_id(bot, gifted_member)
         gifted_member_points = json_utils.get_user_field(gifted_member, "points")
 
-        await ctx.send(' '.join((result, "\n**{}'s** current balance is **{}**.\n**{}'s** current balance is **{}**."
+        await ctx.send(' '.join((result, "\n**{}'s** current balance is **{:,}**.\n**{}'s** current balance is **{:,}**."
                                 .format(author, author_curr_points, gifted_member_name, gifted_member_points))))
     # General Output
     else:
-        await ctx.send(' '.join((result, "Their current balance is **{}**".format(author_curr_points))))
+        await ctx.send(' '.join((result, "Their current balance is **{:,}**".format(author_curr_points))))
 
     # Ran outta money
     if author_curr_points <= 0:
@@ -115,7 +115,7 @@ async def gamble(ctx, bot, wager):
 
     # Say jackpot changed
     if jackpot_changed:
-        await ctx.send("The jackpot is now **{}**".format(get_jackpot_amount()))
+        await ctx.send("The jackpot is now **{:,}**".format(get_jackpot_amount()))
 
 
 async def get_user_from_id(bot, user_id):
@@ -134,7 +134,7 @@ async def points(ctx, bot):
         user_points = json_utils.get_user_field(id_list[i], "points")
         user_bets = json_utils.get_user_field(id_list[i], "bets")
 
-        output += "> **{}**:\n> \t{} Points \n> \t{} Bets\n".format(username, user_points, user_bets)
+        output += "> **{}**:\n> \t{:,} Points \n> \t{:,} Bets\n".format(username, user_points, user_bets)
 
     await ctx.send("{}".format(output))
 
@@ -162,7 +162,7 @@ def get_jackpot_amount():
     return jackpot_json["jackpot"]["points"]
 
 
-@tasks.loop(minutes=5, count=None, reconnect=True)
+@tasks.loop(minutes=3, count=None, reconnect=True)
 async def add_points(bot, voice_channel_id, afk_channel_id):
     await bot.wait_until_ready()
 
