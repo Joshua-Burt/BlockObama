@@ -17,6 +17,7 @@ import json_utils
 import roll as rl
 import server as mcserver
 import gamble
+# import autocomplete
 
 with open('json_files/config.json', 'r') as f:
     config = json.load(f)
@@ -31,8 +32,7 @@ points_loop = None
 @bot.event
 async def on_ready():
     # Startup printing, username, etc.
-    log('Logged in as {0.user}'.format(bot) + Fore.YELLOW +
-        '\nPowered on [o.o]' + Fore.RESET)
+    log('Logged in as {0.user}'.format(bot) + Fore.YELLOW + '\nPowered on [o.o]' + Fore.RESET)
     print("---------------------------------")
 
     game = discord.Game("not Minecraft")
@@ -40,6 +40,7 @@ async def on_ready():
 
     await json_utils.init()
     await gamble.init()
+    # await autocomplete.init()
 
     global points_loop
     points_loop = bot.loop.create_task(gamble.add_points(bot, config["voice_channel"], config["afk_channel"]))
@@ -129,7 +130,7 @@ async def shop(ctx):
         string = "Use **{} play *[Sound Name]*** to play the sound\n".format(config["prefix"])
 
         for row in data:
-            string += "> Name: **{}** | Price: **{}**\n".format(row, data[row]["price"])
+            string += "> Name: **{}** | Price: **{:,}**\n".format(row, data[row]["price"])
 
         await ctx.send(string)
 
@@ -145,7 +146,7 @@ async def pay_to_play(ctx, sound_name):
 
         log("Playing {}.mp3{}".format(Fore.YELLOW + sound_name, Fore.RESET))
     else:
-        await ctx.send("Aha you're poor. You're missing {} points".format(
+        await ctx.send("Aha you're poor. You're missing {:,} points".format(
             json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.message.author.id, "points")))
 
 
@@ -155,11 +156,10 @@ async def pay(ctx, payee, amount):
 
         if json_utils.get_user_field(ctx.message.author.id, "points") > int(amount):
             await gamble.pay_points(ctx.message.author.id, payee.strip("<@>"), int(amount))
-            await ctx.send(
-                "**{}** paid **{}** - **{}** points".format(
-                    await gamble.get_user_from_id(bot, ctx.message.author.id),
-                    await gamble.get_user_from_id(bot, payee.strip("<@>")),
-                    amount))
+            await ctx.send("**{}** paid **{}** - **{:,}** points".format(
+                await gamble.get_user_from_id(bot, ctx.message.author.id),
+                await gamble.get_user_from_id(bot, payee.strip("<@>")),
+                amount))
 
 
 @bot.command()
@@ -173,6 +173,19 @@ async def restart(ctx):
     log("Restarting...")
     sys.tracebacklimit = 0
     exit()
+
+
+@bot.command()
+@commands.is_owner()
+async def reload_json():
+    json_utils.reload_files()
+
+
+# @bot.command()
+# async def complete(ctx):
+#     response = await autocomplete.response(ctx.message.content[13:])
+#
+#     await ctx.send(json.loads(response.values())["choices"]["text"])
 
 
 @bot.listen('on_message')

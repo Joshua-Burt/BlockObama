@@ -20,6 +20,7 @@ async def start(ctx, bot, server_path):
 
         process = subprocess.Popen(['start.bat'], stdin=subprocess.PIPE, encoding='utf8')
 
+        # 50 Seconds is arbitrary, it just was the best amount of time for my modded server
         time.sleep(50)
 
         os.chdir(working_directory)

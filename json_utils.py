@@ -26,6 +26,10 @@ async def init():
     youre_welcomes = youre_welcomes_data
 
 
+def reload_files():
+    init()
+
+
 # USER JSON
 def add_user(member_id):
     users_file.append({
