@@ -171,7 +171,7 @@ async def add_points(bot, voice_channel_ids, afk_channel_id):
         members = channel.members
 
         for member in members:
-            if not member.bot and member.id in id_list:
+            if not member.bot and str(member.id) in id_list:
                 json_utils.update_user(member.id, "points", json_utils.get_user_field(member.id, "points") + 100)
 
     afk_channel = bot.get_channel(afk_channel_id)

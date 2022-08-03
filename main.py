@@ -43,7 +43,7 @@ async def on_ready():
     # await autocomplete.init()
 
     global points_loop
-    points_loop = bot.loop.create_task(gamble.add_points(bot, config["voice_channel"], config["afk_channel"]))
+    # points_loop = bot.loop.create_task(gamble.add_points(bot, config["voice_channel"], config["afk_channel"]))
     gamble.add_points.start(bot, config["voice_channel"], config["afk_channel"])
 
 
