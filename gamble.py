@@ -58,13 +58,13 @@ async def gamble(ctx, bot, wager):
     elif 0.30 < value <= 0.45:
         multiple = random.random()
         json_utils.update_user(author.id, "points", author_prev_points - wager + round(wager * multiple))
-        add_to_jackpot(wager - round(wager * multiple))
+        await add_to_jackpot(wager - round(wager * multiple))
         result = "**{}** has gambled **{:,}** and got {:.2f}x back.".format(author, wager, multiple)
         jackpot_changed = True
 
     elif 0.45 < value <= 0.6:
         json_utils.update_user(author.id, "points", author_prev_points - round(wager / 2))
-        add_to_jackpot(round(wager / 2))
+        await add_to_jackpot(round(wager / 2))
         result = "**{}** has gambled **{:,}** and lost half of it.".format(author, wager)
         jackpot_changed = True
 
@@ -75,7 +75,7 @@ async def gamble(ctx, bot, wager):
 
     elif 0.85 < value <= 0.90:
         json_utils.update_user(author.id, "points", author_prev_points - wager)
-        add_to_jackpot(round(wager))
+        await add_to_jackpot(round(wager))
         result = "**{}** has gambled **{:,}** and lost all of it.".format(author, wager)
         jackpot_changed = True
 
@@ -89,10 +89,10 @@ async def gamble(ctx, bot, wager):
         result = "**{}** has gambled **{:,}** and has given it to **{}**.".format(author, wager, gifted_member_name)
 
     elif value >= 0.99999:
-        json_utils.update_user(author.id, "points", author_prev_points + get_jackpot_amount())
+        json_utils.update_user(author.id, "points", author_prev_points + await get_jackpot_amount())
         result = "**Congrats!** You've won the jackpot of **{:,}** points!" \
             .format(get_jackpot_amount(), json_utils.get_user_field(author.id, "points"))
-        reset_jackpot()
+        await reset_jackpot()
         jackpot_changed = True
 
     author_curr_points = json_utils.get_user_field(author.id, "points")
@@ -144,34 +144,35 @@ async def pay_points(from_user, to_user, amount):
     json_utils.update_user(to_user, "points", json_utils.get_user_field(to_user, "points") + amount)
 
 
-def add_to_jackpot(amount):
+async def add_to_jackpot(amount):
     jackpot_json["jackpot"]["points"] += amount
 
     with open('json_files/jackpot.json', 'w') as file:
         json.dump(jackpot_json, file, indent=4)
 
 
-def reset_jackpot():
+async def reset_jackpot():
     jackpot_json["jackpot"]["points"] = 0
 
     with open('json_files/jackpot.json', 'w') as file:
         json.dump(jackpot_json, file, indent=4)
 
 
-def get_jackpot_amount():
+async def get_jackpot_amount():
     return jackpot_json["jackpot"]["points"]
 
 
 @tasks.loop(minutes=3, count=None, reconnect=True)
-async def add_points(bot, voice_channel_id, afk_channel_id):
+async def add_points(bot, voice_channel_ids, afk_channel_id):
     await bot.wait_until_ready()
 
-    channel = bot.get_channel(voice_channel_id)
-    members = channel.members
+    for channel_id in voice_channel_ids:
+        channel = bot.get_channel(channel_id)
+        members = channel.members
 
-    for member in members:
-        if not member.bot and member.id in id_list:
-            json_utils.update_user(member.id, "points", json_utils.get_user_field(member.id, "points") + 100)
+        for member in members:
+            if not member.bot and member.id in id_list:
+                json_utils.update_user(member.id, "points", json_utils.get_user_field(member.id, "points") + 100)
 
     afk_channel = bot.get_channel(afk_channel_id)
     afk_members = afk_channel.members

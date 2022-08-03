@@ -69,7 +69,16 @@ def pick_random_user():
 
 # SOUNDS JSON
 def get_sound_price(sound_name):
-    return price_file[sound_name]["price"]
+    """
+    :param sound_name: name of sound to be played
+    :type sound_name: str
+    :returns: price to play the sound with the name
+    :rtype: int or None
+    """
+
+    if price_file[sound_name]:
+        return price_file[sound_name]["price"]
+    return None
 
 
 def set_sound_price(sound_name):

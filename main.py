@@ -140,6 +140,10 @@ async def pay_to_play(ctx, sound_name):
     current_points = json_utils.get_user_field(ctx.message.author.id, "points")
     cost = json_utils.get_sound_price(sound_name)
 
+    if cost is None:
+        await ctx.send("There's no sound with that name ¯\\_(ツ)_/¯")
+        return
+
     if current_points >= cost:
         json_utils.update_user(ctx.message.author.id, "points", current_points - cost)
         await play_sound(ctx.message.author, "downloads/pay_to_play/{}.mp3".format(sound_name))
