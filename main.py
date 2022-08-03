@@ -17,7 +17,6 @@ import json_utils
 import roll as rl
 import server as mcserver
 import gamble
-# import autocomplete
 
 with open('json_files/config.json', 'r') as f:
     config = json.load(f)
@@ -40,7 +39,6 @@ async def on_ready():
 
     await json_utils.init()
     await gamble.init()
-    # await autocomplete.init()
 
     global points_loop
     gamble.add_points.start(bot, config["voice_channel"], config["afk_channel"])
@@ -190,13 +188,6 @@ async def on_command_error(ctx, error):
         # TODO: Inform user that the command doesn't exist
         return
     raise error
-
-
-# @bot.command()
-# async def complete(ctx):
-#     response = await autocomplete.response(ctx.message.content[13:])
-#
-#     await ctx.send(json.loads(response.values())["choices"]["text"])
 
 
 @bot.listen('on_message')
