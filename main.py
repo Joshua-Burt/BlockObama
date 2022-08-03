@@ -43,7 +43,6 @@ async def on_ready():
     # await autocomplete.init()
 
     global points_loop
-    # points_loop = bot.loop.create_task(gamble.add_points(bot, config["voice_channel"], config["afk_channel"]))
     gamble.add_points.start(bot, config["voice_channel"], config["afk_channel"])
 
 
@@ -181,8 +180,16 @@ async def restart(ctx):
 
 @bot.command()
 @commands.is_owner()
-async def reload_json():
+async def reload():
     json_utils.reload_files()
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        # TODO: Inform user that the command doesn't exist
+        return
+    raise error
 
 
 # @bot.command()

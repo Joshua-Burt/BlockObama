@@ -76,7 +76,7 @@ def get_sound_price(sound_name):
     :rtype: int or None
     """
 
-    if price_file[sound_name]:
+    if sound_name in price_file:
         return price_file[sound_name]["price"]
     return None
 
