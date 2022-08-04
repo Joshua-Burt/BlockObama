@@ -31,7 +31,7 @@ points_loop = None
 @bot.event
 async def on_ready():
     # Startup printing, username, etc.
-    log('Logged in as {0.user}'.format(bot) + Fore.YELLOW + '\nPowered on [o.o]' + Fore.RESET)
+    await log('Logged in as {0.user}'.format(bot) + Fore.YELLOW + '\nPowered on [o.o]' + Fore.RESET)
     print("---------------------------------")
 
     game = discord.Game("not Minecraft")
@@ -82,7 +82,7 @@ async def bet(ctx, wager):
 
 @bot.command(aliases=['start server', 'start'])
 async def start_server(ctx):
-    log("Starting server...")
+    await log("Starting server...")
     await ctx.send("Starting server...")
     await mcserver.start(ctx, bot, config["server_path"])
 
@@ -110,7 +110,7 @@ async def on_voice_state_update(member, before, after):
             return
 
         await play_sound(member, "downloads/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
-        log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
+        await log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
                                                  Fore.YELLOW + after.channel.name + Fore.RESET))
 
 
@@ -145,7 +145,7 @@ async def pay_to_play(ctx, sound_name):
         json_utils.update_user(ctx.message.author.id, "points", current_points - cost)
         await play_sound(ctx.message.author, "downloads/pay_to_play/{}.mp3".format(sound_name))
 
-        log("Playing {}.mp3{}".format(Fore.YELLOW + sound_name, Fore.RESET))
+        await log("Playing {}.mp3{}".format(Fore.YELLOW + sound_name, Fore.RESET))
     else:
         await ctx.send("Aha you're poor. You're missing {:,} points".format(
             json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.message.author.id, "points")))
@@ -171,7 +171,7 @@ async def wan(ctx):
 @bot.command()
 @commands.is_owner()
 async def restart(ctx):
-    log("Restarting...")
+    await log("Restarting...")
     sys.tracebacklimit = 0
     exit()
 
@@ -179,7 +179,9 @@ async def restart(ctx):
 @bot.command()
 @commands.is_owner()
 async def reload():
-    json_utils.reload_files()
+    await log("Reloading JSON files...")
+    await json_utils.reload_files()
+    await log("Files reloaded")
 
 
 @bot.event
@@ -220,7 +222,7 @@ def timestamp_to_readable(timestamp):
     return value.strftime('%Y-%m-%d %H:%M:%S -')
 
 
-def log(input_str):
+async def log(input_str):
     print(Fore.RESET + timestamp_to_readable(time.time()), Fore.WHITE + input_str)
 
 
