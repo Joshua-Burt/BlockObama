@@ -23,7 +23,7 @@ with open('json_files/config.json', 'r') as f:
 
 # Constants
 DISCORD_TOKEN = config["token"]
-bot = commands.Bot(command_prefix=config["prefix"])
+bot = discord.Bot()
 
 points_loop = None
 
@@ -49,21 +49,29 @@ async def on_member_join(member):
     json_utils.add_user(member.id)
 
 
-@bot.command(pass_context=True)
-async def say(ctx, *message):
-    await ctx.message.delete()
-    await ctx.send(' '.join(message))
+@bot.slash_command(guilds_ids=["907101406027194389"])
+async def say(ctx, message):
+    await ctx.respond(message)
 
 
-@bot.command()
-async def mock(ctx):
-    logs = await ctx.channel.history(limit=2).flatten()
-
-    if logs[1].author == bot.user:
-        await ctx.send('no')
+@bot.message_command(name="mock")
+async def mock(ctx, message: discord.Message):
+    if message.author == bot.user:
+        await ctx.respond('no')
     else:
-        in_str = logs[1].content
-        await ctx.send(await mockify(in_str))
+        in_str = message.content
+        await ctx.respond(await mockify(in_str))
+
+
+@bot.slash_command(guilds_ids=["907101406027194389"])
+async def mock(ctx):
+    logs = await ctx.channel.history(limit=1).flatten()
+
+    if logs[0].author == bot.user:
+        await ctx.respond('no')
+    else:
+        in_str = logs[0].content
+        await ctx.respond(await mockify(in_str))
 
 
 @bot.command()
@@ -71,36 +79,38 @@ async def roll(ctx, input_string):
     await rl.roll(ctx, input_string)
 
 
-@bot.command(aliases=["gamble"])
+@bot.slash_command(name="gamble", guilds_ids=["907101406027194389"])
 async def bet(ctx, wager):
     if ctx.channel.id == config["gamble_channel"]:
         await gamble.gamble(ctx, bot, wager)
 
         author_id = ctx.message.author.id
         json_utils.update_user(author_id, "bets", json_utils.get_user_field(author_id, "bets") + 1)
+    else:
+        await ctx.respond("This isn't the gambling channel dummy")
 
 
-@bot.command(aliases=['start server', 'start'])
+@bot.slash_command(name="start", guilds_ids=["907101406027194389"], description="Start the Minecraft Server")
 async def start_server(ctx):
     await log("Starting server...")
-    await ctx.send("Starting server...")
+    await ctx.respond("Starting server...")
     await mcserver.start(ctx, bot, config["server_path"])
 
     game = discord.Game("Minecraft")
     await bot.change_presence(status=discord.Status.online, activity=game)
 
 
-@bot.command(aliases=['stop server', 'stop'])
+@bot.slash_command(name="stop", guilds_ids=["907101406027194389"], description="Stop the Minecraft Server")
 async def stop_server(ctx):
     await mcserver.stop(ctx)
 
 
-@bot.command(name='intro', description='Toggle intro on entering voice chat')
+@bot.slash_command(name="intro", guilds_ids=["907101406027194389"], description="Toggle your intro when joining a voice call")
 async def toggle_intro(ctx):
     new_play_on_enter = not json_utils.get_user_field(ctx.message.author.id, "play_on_enter")
     json_utils.update_user(ctx.message.author.id, "play_on_enter", new_play_on_enter)
 
-    await ctx.send(("Your intro is now ON" if new_play_on_enter else "Your intro is now OFF"))
+    await ctx.respond(("Your intro is now ON" if new_play_on_enter else "Your intro is now OFF"))
 
 
 @bot.event
@@ -111,11 +121,11 @@ async def on_voice_state_update(member, before, after):
 
         await play_sound(member, "downloads/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
         await log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
-                                                 Fore.YELLOW + after.channel.name + Fore.RESET))
+                                                       Fore.YELLOW + after.channel.name + Fore.RESET))
 
 
-@bot.command(aliases=["points"])
-async def say_points(ctx):
+@bot.command()
+async def points(ctx):
     await gamble.points(ctx, bot)
 
 
@@ -129,7 +139,7 @@ async def shop(ctx):
         for row in data:
             string += "> Name: **{}** | Price: **{:,}**\n".format(row, data[row]["price"])
 
-        await ctx.send(string)
+        await ctx.respond(string)
 
 
 @bot.command(aliases=["play"])
@@ -138,7 +148,7 @@ async def pay_to_play(ctx, sound_name):
     cost = json_utils.get_sound_price(sound_name)
 
     if cost is None:
-        await ctx.send("There's no sound with that name ¯\\_(ツ)_/¯")
+        await ctx.respond("There's no sound with that name ¯\\_(ツ)_/¯")
         return
 
     if current_points >= cost:
@@ -147,7 +157,7 @@ async def pay_to_play(ctx, sound_name):
 
         await log("Playing {}.mp3{}".format(Fore.YELLOW + sound_name, Fore.RESET))
     else:
-        await ctx.send("Aha you're poor. You're missing {:,} points".format(
+        await ctx.respond("Aha you're poor. You're missing {:,} points".format(
             json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.message.author.id, "points")))
 
 
@@ -157,7 +167,7 @@ async def pay(ctx, payee, amount):
 
         if json_utils.get_user_field(ctx.message.author.id, "points") > int(amount):
             await gamble.pay_points(ctx.message.author.id, payee.strip("<@>"), int(amount))
-            await ctx.send("**{}** paid **{}** - **{:,}** points".format(
+            await ctx.respond("**{}** paid **{}** - **{:,}** points".format(
                 await gamble.get_user_from_id(bot, ctx.message.author.id),
                 await gamble.get_user_from_id(bot, payee.strip("<@>")),
                 amount))
@@ -178,7 +188,7 @@ async def restart(ctx):
 
 @bot.command()
 @commands.is_owner()
-async def reload():
+async def reload(ctx):
     await log("Reloading JSON files...")
     await json_utils.reload_files()
     await log("Files reloaded")
@@ -196,7 +206,7 @@ async def on_command_error(ctx, error):
 async def thanks(message):
     thank_you_messages = ['thanks obama', 'thank you obama', 'thx obama', 'tanks obama', 'ty obama', 'thank u obama']
     if any(x in message.content.lower() for x in thank_you_messages):
-        await message.channel.send(await json_utils.get_random_youre_welcome())
+        await message.channel.respond(await json_utils.get_random_youre_welcome())
 
 
 # Helper functions
