@@ -49,7 +49,7 @@ async def on_member_join(member):
     json_utils.add_user(member.id)
 
 
-@bot.slash_command(guilds_ids=["907101406027194389"])
+@bot.slash_command()
 async def say(ctx, message):
     await ctx.respond(message)
 
@@ -63,7 +63,7 @@ async def mock(ctx, message: discord.Message):
         await ctx.respond(await mockify(in_str))
 
 
-@bot.slash_command(guilds_ids=["907101406027194389"])
+@bot.slash_command()
 async def mock(ctx):
     logs = await ctx.channel.history(limit=1).flatten()
 
@@ -79,7 +79,7 @@ async def roll(ctx, input_string):
     await rl.roll(ctx, input_string)
 
 
-@bot.slash_command(name="gamble", guilds_ids=["907101406027194389"])
+@bot.slash_command(name="gamble")
 async def bet(ctx, wager):
     if ctx.channel.id == config["gamble_channel"]:
         await gamble.gamble(ctx, bot, wager)
@@ -90,7 +90,7 @@ async def bet(ctx, wager):
         await ctx.respond("This isn't the gambling channel dummy")
 
 
-@bot.slash_command(name="start", guilds_ids=["907101406027194389"], description="Start the Minecraft Server")
+@bot.slash_command(name="start", description="Start the Minecraft Server")
 async def start_server(ctx):
     await log("Starting server...")
     await ctx.respond("Starting server...")
@@ -100,12 +100,12 @@ async def start_server(ctx):
     await bot.change_presence(status=discord.Status.online, activity=game)
 
 
-@bot.slash_command(name="stop", guilds_ids=["907101406027194389"], description="Stop the Minecraft Server")
+@bot.slash_command(name="stop", description="Stop the Minecraft Server")
 async def stop_server(ctx):
     await mcserver.stop(ctx)
 
 
-@bot.slash_command(name="intro", guilds_ids=["907101406027194389"], description="Toggle your intro when joining a voice call")
+@bot.slash_command(name="intro", description="Toggle your intro when joining a voice call")
 async def toggle_intro(ctx):
     new_play_on_enter = not json_utils.get_user_field(ctx.message.author.id, "play_on_enter")
     json_utils.update_user(ctx.message.author.id, "play_on_enter", new_play_on_enter)
