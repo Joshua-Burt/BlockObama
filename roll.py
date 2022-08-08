@@ -1,5 +1,3 @@
-
-
 import random
 import re
 import discord
@@ -21,7 +19,7 @@ async def roll(ctx, raw_roll):
 
     # Generate a random number using the max roll as many times as there are rolls. Add each roll together.
     if not roll_obj:
-        await ctx.send("Invalid input")
+        await ctx.respond("Invalid input")
         return False
     else:
         for i in range(0, roll_obj.num_of_rolls):
@@ -35,7 +33,7 @@ async def roll(ctx, raw_roll):
         modified_num = num - roll_obj.modifier
 
     if roll_obj.max_num == 2 and 1 <= modified_num <= 2:
-        await ctx.send(file=discord.File('img\\dice\\d2\\d2-' + str(modified_num) + '.jpg'))
+        await ctx.respond(file=discord.File('img\\dice\\d2\\d2-' + str(modified_num) + '.jpg'))
         if random_num == '1':
             await ctx.send('It\'s heads!')
         else:
@@ -44,24 +42,24 @@ async def roll(ctx, raw_roll):
 
     # Identifies the maximum roll, and if the total roll is <= to it, returns an image of that die and number
     elif roll_obj.max_num == 4 and 1 <= modified_num <= 4:
-        await ctx.send(file=discord.File('img\\dice\\d4\\d4-' + str(modified_num) + '.png'))
+        await ctx.respond(file=discord.File('img\\dice\\d4\\d4-' + str(modified_num) + '.png'))
     elif roll_obj.max_num == 6 and 1 <= modified_num <= 6:
-        await ctx.send(file=discord.File('img\\dice\\d6\\d6-' + str(modified_num) + '.png'))
+        await ctx.respond(file=discord.File('img\\dice\\d6\\d6-' + str(modified_num) + '.png'))
     elif roll_obj.max_num == 8 and 1 <= modified_num <= 8:
-        await ctx.send(file=discord.File('img\\dice\\d8\\d8-' + str(modified_num) + '.png'))
+        await ctx.respond(file=discord.File('img\\dice\\d8\\d8-' + str(modified_num) + '.png'))
     elif roll_obj.max_num == 10 and 1 <= modified_num <= 10:
-        await ctx.send(file=discord.File('img\\dice\\d10\\d10-' + str(modified_num) + '.png'))
+        await ctx.respond(file=discord.File('img\\dice\\d10\\d10-' + str(modified_num) + '.png'))
     elif roll_obj.max_num == 12 and 1 <= modified_num <= 12:
-        await ctx.send(file=discord.File('img\\dice\\d12\\d12-' + str(modified_num) + '.png'))
+        await ctx.respond(file=discord.File('img\\dice\\d12\\d12-' + str(modified_num) + '.png'))
     elif roll_obj.max_num == 20 and 1 <= modified_num <= 20:
-        await ctx.send(file=discord.File('img\\dice\\d20\\d20-' + str(modified_num) + '.png'))
+        await ctx.respond(file=discord.File('img\\dice\\d20\\d20-' + str(modified_num) + '.png'))
 
-    # Send the message containing the roll info if there was a specified modifier. Otherwise, just send the result.
+    # send the message containing the roll info if there was a specified modifier. Otherwise, just respond the result.
     if roll_obj.modifier != 0:
-        await ctx.send("> " + str(num) + " " + roll_obj.operation + " "
-                       + str(roll_obj.modifier) + " = " + str(modified_num))
+        await ctx.respond("> " + str(num) + " " + roll_obj.operation + " "
+                          + str(roll_obj.modifier) + " = " + str(modified_num))
     else:
-        await ctx.send("> " + str(num))
+        await ctx.respond("> " + str(num))
 
 
 # Inputs a string in the format of a D&D roll (eg. 2d20 + 2) and extracts the information, and finally returns an object

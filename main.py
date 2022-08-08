@@ -10,6 +10,8 @@ import discord
 from os.path import exists
 from colorama import Fore
 from time import sleep
+
+from discord import option
 from discord.ext import commands
 
 # Local Files
@@ -76,8 +78,19 @@ async def mock(ctx):
 
 
 @bot.slash_command(name="roll", description="Roll a number of various sided dice")
-async def roll(ctx, input_string):
-    await rl.roll(ctx, input_string)
+@option(
+    "modifier",
+    description="How much to add/subtract from the total roll",
+    required=False,
+    default=0
+)
+async def roll(ctx, number_of_dice, number_of_faces, modifier):
+    if int(modifier) >= 0:
+        roll_str = "{}d{} + {}".format(number_of_dice, number_of_faces, modifier)
+    else:
+        roll_str = "{}d{} - {}".format(number_of_dice, number_of_faces, abs(int(modifier)))
+
+    await rl.roll(ctx, roll_str)
 
 
 @bot.slash_command(name="gamble")
@@ -135,7 +148,7 @@ async def shop(ctx):
     with open('json_files/item_prices.json', 'r') as file:
         data = json.load(file)
 
-        string = "Use **/play *[Sound Name]*** to play the sound\n".format(config["prefix"])
+        string = "Use **/play *[Sound Name]*** to play the sound\n"
 
         for row in data:
             string += "> Name: **{}** | Price: **{:,}**\n".format(row, data[row]["price"])
@@ -166,12 +179,12 @@ async def pay_to_play(ctx, sound_name):
 @bot.slash_command(name="pay", description="Pay amount of points to another user")
 async def pay(ctx, payee, amount):
     if len(payee) > 0 and len(amount) > 0 and int(amount) > 0:
-
         if json_utils.get_user_field(ctx.author.id, "points") > int(amount):
-            await gamble.pay_points(ctx.author.id, payee.strip("<@>"), int(amount))
+            await gamble.pay_points(ctx.author.id, payee.strip("<@!>"), int(amount))
+
             await ctx.respond("**{}** paid **{}** - **{:,}** points".format(
                 await gamble.get_user_from_id(bot, ctx.author.id),
-                await gamble.get_user_from_id(bot, payee.strip("<@>")), amount))
+                await gamble.get_user_from_id(bot, payee.strip("<@!>")), int(amount)))
 
 
 @bot.slash_command(name="wan", description="Hello there")
@@ -179,7 +192,7 @@ async def wan(ctx):
     await play_sound(ctx.author, "downloads/hello_there.mp3")
 
 
-@bot.slash_command(name="reload", description="Reloads the Bot's internal files")
+@bot.slash_command(name="reload", description="Reloads the bot's internal files")
 @commands.is_owner()
 async def reload(ctx):
     await log("Reloading JSON files...")
