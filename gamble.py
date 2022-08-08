@@ -23,7 +23,7 @@ async def gamble(ctx, bot, wager):
         await ctx.respond("What")
         return
 
-    author = ctx.message.author
+    author = ctx.author
     author_prev_points = int(json_utils.get_user_field(author.id, "points"))
 
     if wager != "all":
@@ -110,12 +110,12 @@ async def gamble(ctx, bot, wager):
 
     # Ran outta money
     if author_curr_points <= 0:
-        await ctx.respond("Congratulations, you've lost everything! You've been reset to 100 points")
+        await ctx.send("Congratulations, you've lost everything! You've been reset to 100 points")
         json_utils.update_user(author.id, "points", 100)
 
     # Say jackpot changed
     if jackpot_changed:
-        await ctx.respond("The jackpot is now **{:,}**".format(await get_jackpot_amount()))
+        await ctx.send("The jackpot is now **{:,}**".format(await get_jackpot_amount()))
 
 
 async def get_user_from_id(bot, user_id):

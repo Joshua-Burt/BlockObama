@@ -46,15 +46,16 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
+    await log("Adding member {}".format(member))
     json_utils.add_user(member.id)
 
 
-@bot.slash_command()
+@bot.slash_command(name="say", description="Repeat the inputted message")
 async def say(ctx, message):
     await ctx.respond(message)
 
 
-@bot.message_command(name="mock")
+@bot.message_command(name="mock", description="Mock the selected message")
 async def mock(ctx, message: discord.Message):
     if message.author == bot.user:
         await ctx.respond('no')
@@ -63,7 +64,7 @@ async def mock(ctx, message: discord.Message):
         await ctx.respond(await mockify(in_str))
 
 
-@bot.slash_command()
+@bot.slash_command(name="mock", description="Mock the last message sent")
 async def mock(ctx):
     logs = await ctx.channel.history(limit=1).flatten()
 
@@ -74,7 +75,7 @@ async def mock(ctx):
         await ctx.respond(await mockify(in_str))
 
 
-@bot.command()
+@bot.slash_command(name="roll", description="Roll a number of various sided dice")
 async def roll(ctx, input_string):
     await rl.roll(ctx, input_string)
 
@@ -84,7 +85,7 @@ async def bet(ctx, wager):
     if ctx.channel.id == config["gamble_channel"]:
         await gamble.gamble(ctx, bot, wager)
 
-        author_id = ctx.message.author.id
+        author_id = ctx.author.id
         json_utils.update_user(author_id, "bets", json_utils.get_user_field(author_id, "bets") + 1)
     else:
         await ctx.respond("This isn't the gambling channel dummy")
@@ -93,8 +94,7 @@ async def bet(ctx, wager):
 @bot.slash_command(name="start", description="Start the Minecraft Server")
 async def start_server(ctx):
     await log("Starting server...")
-    await ctx.respond("Starting server...")
-    await mcserver.start(ctx, bot, config["server_path"])
+    await mcserver.start(ctx, config["server_path"])
 
     game = discord.Game("Minecraft")
     await bot.change_presence(status=discord.Status.online, activity=game)
@@ -102,13 +102,14 @@ async def start_server(ctx):
 
 @bot.slash_command(name="stop", description="Stop the Minecraft Server")
 async def stop_server(ctx):
+    await log("Stopped the server")
     await mcserver.stop(ctx)
 
 
 @bot.slash_command(name="intro", description="Toggle your intro when joining a voice call")
 async def toggle_intro(ctx):
-    new_play_on_enter = not json_utils.get_user_field(ctx.message.author.id, "play_on_enter")
-    json_utils.update_user(ctx.message.author.id, "play_on_enter", new_play_on_enter)
+    new_play_on_enter = not json_utils.get_user_field(ctx.author.id, "play_on_enter")
+    json_utils.update_user(ctx.author.id, "play_on_enter", new_play_on_enter)
 
     await ctx.respond(("Your intro is now ON" if new_play_on_enter else "Your intro is now OFF"))
 
@@ -119,22 +120,22 @@ async def on_voice_state_update(member, before, after):
         if json_utils.get_user_field(member.id, "play_on_enter") is None:
             return
 
-        await play_sound(member, "downloads/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
         await log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
                                                        Fore.YELLOW + after.channel.name + Fore.RESET))
+        await play_sound(member, "downloads/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
 
 
-@bot.command()
+@bot.slash_command(name="points", description="Display the points of each member")
 async def points(ctx):
     await gamble.points(ctx, bot)
 
 
-@bot.command()
+@bot.slash_command(name="shop", description="Display the sounds shop")
 async def shop(ctx):
     with open('json_files/item_prices.json', 'r') as file:
         data = json.load(file)
 
-        string = "Use **{} play *[Sound Name]*** to play the sound\n".format(config["prefix"])
+        string = "Use **/play *[Sound Name]*** to play the sound\n".format(config["prefix"])
 
         for row in data:
             string += "> Name: **{}** | Price: **{:,}**\n".format(row, data[row]["price"])
@@ -142,9 +143,9 @@ async def shop(ctx):
         await ctx.respond(string)
 
 
-@bot.command(aliases=["play"])
+@bot.slash_command(name="play", description="Play a sound")
 async def pay_to_play(ctx, sound_name):
-    current_points = json_utils.get_user_field(ctx.message.author.id, "points")
+    current_points = json_utils.get_user_field(ctx.author.id, "points")
     cost = json_utils.get_sound_price(sound_name)
 
     if cost is None:
@@ -152,41 +153,33 @@ async def pay_to_play(ctx, sound_name):
         return
 
     if current_points >= cost:
-        json_utils.update_user(ctx.message.author.id, "points", current_points - cost)
-        await play_sound(ctx.message.author, "downloads/pay_to_play/{}.mp3".format(sound_name))
-
+        await ctx.respond("Playing {}.mp3".format(sound_name))
         await log("Playing {}.mp3{}".format(Fore.YELLOW + sound_name, Fore.RESET))
+
+        json_utils.update_user(ctx.author.id, "points", current_points - cost)
+        await play_sound(ctx.author, "downloads/pay_to_play/{}.mp3".format(sound_name))
     else:
         await ctx.respond("Aha you're poor. You're missing {:,} points".format(
-            json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.message.author.id, "points")))
+            json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.author.id, "points")))
 
 
-@bot.command(aliases=['give'])
+@bot.slash_command(name="pay", description="Pay amount of points to another user")
 async def pay(ctx, payee, amount):
     if len(payee) > 0 and len(amount) > 0 and int(amount) > 0:
 
-        if json_utils.get_user_field(ctx.message.author.id, "points") > int(amount):
-            await gamble.pay_points(ctx.message.author.id, payee.strip("<@>"), int(amount))
+        if json_utils.get_user_field(ctx.author.id, "points") > int(amount):
+            await gamble.pay_points(ctx.author.id, payee.strip("<@>"), int(amount))
             await ctx.respond("**{}** paid **{}** - **{:,}** points".format(
-                await gamble.get_user_from_id(bot, ctx.message.author.id),
-                await gamble.get_user_from_id(bot, payee.strip("<@>")),
-                amount))
+                await gamble.get_user_from_id(bot, ctx.author.id),
+                await gamble.get_user_from_id(bot, payee.strip("<@>")), amount))
 
 
-@bot.command()
+@bot.slash_command(name="wan", description="Hello there")
 async def wan(ctx):
-    await play_sound(ctx.message.author, "downloads/hello_there.mp3")
+    await play_sound(ctx.author, "downloads/hello_there.mp3")
 
 
-@bot.command()
-@commands.is_owner()
-async def restart(ctx):
-    await log("Restarting...")
-    sys.tracebacklimit = 0
-    exit()
-
-
-@bot.command()
+@bot.slash_command(name="reload", description="Reloads the Bot's internal files")
 @commands.is_owner()
 async def reload(ctx):
     await log("Reloading JSON files...")
@@ -244,6 +237,7 @@ async def play_sound(member, source):
             await singing_channel.connect()
 
             voice = bot.voice_clients[0]
+
             voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
 
             voice.pause()
@@ -252,7 +246,7 @@ async def play_sound(member, source):
 
             sleep(5)
 
-            await bot.voice_clients[0].disconnect()
+            await voice.disconnect(force=True)
 
 
 bot.run(DISCORD_TOKEN)
