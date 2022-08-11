@@ -1,6 +1,7 @@
 # BlockObama
 ## Overview
 The original purpose of creating this bot was to have a small group of friends be able to start and stop a Minecraft server that runs on my computer.
+
 This project is mainly used for myself, so it can change frequently and without warning. Feel free to contribute regardless.
 
 Since then, I've added several features, such as:
