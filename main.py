@@ -2,14 +2,18 @@ __author__ = "Joshua Burt"
 
 import asyncio
 import datetime
-import sys
 import time
 import json
 import discord
 
 from os.path import exists
+
+import ffmpeg
+from mutagen.mp3 import MP3
 from colorama import Fore
 from time import sleep
+
+from discord import option
 from discord.ext import commands
 
 # Local Files
@@ -23,7 +27,7 @@ with open('json_files/config.json', 'r') as f:
 
 # Constants
 DISCORD_TOKEN = config["token"]
-bot = commands.Bot(command_prefix=config["prefix"])
+bot = discord.Bot()
 
 points_loop = None
 
@@ -46,61 +50,83 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
+    await log("Adding member {}".format(member))
     json_utils.add_user(member.id)
 
 
-@bot.command(pass_context=True)
-async def say(ctx, *message):
-    await ctx.message.delete()
-    await ctx.send(' '.join(message))
+@bot.slash_command(name="say", description="Repeat the inputted message")
+async def say(ctx, message):
+    await ctx.respond(message)
 
 
-@bot.command()
-async def mock(ctx):
-    logs = await ctx.channel.history(limit=2).flatten()
-
-    if logs[1].author == bot.user:
-        await ctx.send('no')
+@bot.message_command(name="mock", description="Mock the selected message")
+async def mock(ctx, message: discord.Message):
+    if message.author == bot.user:
+        await ctx.respond('no')
     else:
-        in_str = logs[1].content
-        await ctx.send(await mockify(in_str))
+        in_str = message.content
+        await ctx.respond(await mockify(in_str))
 
 
-@bot.command()
-async def roll(ctx, input_string):
-    await rl.roll(ctx, input_string)
+@bot.slash_command(name="mock", description="Mock the last message sent")
+async def mock(ctx):
+    logs = await ctx.channel.history(limit=1).flatten()
+
+    if logs[0].author == bot.user:
+        await ctx.respond('no')
+    else:
+        in_str = logs[0].content
+        await ctx.respond(await mockify(in_str))
 
 
-@bot.command(aliases=["gamble"])
+@bot.slash_command(name="roll", description="Roll a number of various sided dice")
+@option(
+    "modifier",
+    description="How much to add/subtract from the total roll",
+    required=False,
+    default=0
+)
+async def roll(ctx, number_of_dice, number_of_faces, modifier):
+    if int(modifier) >= 0:
+        roll_str = "{}d{} + {}".format(number_of_dice, number_of_faces, modifier)
+    else:
+        roll_str = "{}d{} - {}".format(number_of_dice, number_of_faces, abs(int(modifier)))
+
+    await rl.roll(ctx, roll_str)
+
+
+@bot.slash_command(name="gamble")
 async def bet(ctx, wager):
     if ctx.channel.id == config["gamble_channel"]:
         await gamble.gamble(ctx, bot, wager)
 
-        author_id = ctx.message.author.id
+        author_id = ctx.author.id
         json_utils.update_user(author_id, "bets", json_utils.get_user_field(author_id, "bets") + 1)
+    else:
+        await ctx.respond("This isn't the gambling channel dummy")
 
 
-@bot.command(aliases=['start server', 'start'])
+@bot.slash_command(name="start", description="Start the Minecraft Server")
 async def start_server(ctx):
     await log("Starting server...")
-    await ctx.send("Starting server...")
-    await mcserver.start(ctx, bot, config["server_path"])
+    await mcserver.start(ctx, config["server_path"])
 
     game = discord.Game("Minecraft")
     await bot.change_presence(status=discord.Status.online, activity=game)
 
 
-@bot.command(aliases=['stop server', 'stop'])
+@bot.slash_command(name="stop", description="Stop the Minecraft Server")
 async def stop_server(ctx):
+    await log("Stopped the server")
     await mcserver.stop(ctx)
 
 
-@bot.command(name='intro', description='Toggle intro on entering voice chat')
+@bot.slash_command(name="intro", description="Toggle your intro when joining a voice call")
 async def toggle_intro(ctx):
-    new_play_on_enter = not json_utils.get_user_field(ctx.message.author.id, "play_on_enter")
-    json_utils.update_user(ctx.message.author.id, "play_on_enter", new_play_on_enter)
+    new_play_on_enter = not json_utils.get_user_field(ctx.author.id, "play_on_enter")
+    json_utils.update_user(ctx.author.id, "play_on_enter", new_play_on_enter)
 
-    await ctx.send(("Your intro is now ON" if new_play_on_enter else "Your intro is now OFF"))
+    await ctx.respond(("Your intro is now ON" if new_play_on_enter else "Your intro is now OFF"))
 
 
 @bot.event
@@ -109,76 +135,70 @@ async def on_voice_state_update(member, before, after):
         if json_utils.get_user_field(member.id, "play_on_enter") is None:
             return
 
-        await play_sound(member, "downloads/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
         await log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
-                                                 Fore.YELLOW + after.channel.name + Fore.RESET))
+                                                       Fore.YELLOW + after.channel.name + Fore.RESET))
+        await play_sound(member, "downloads/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
 
 
-@bot.command(aliases=["points"])
-async def say_points(ctx):
+@bot.slash_command(name="points", description="Display the points of each member")
+async def points(ctx):
     await gamble.points(ctx, bot)
 
 
-@bot.command()
+@bot.slash_command(name="shop", description="Display the sounds shop")
 async def shop(ctx):
     with open('json_files/item_prices.json', 'r') as file:
         data = json.load(file)
 
-        string = "Use **{} play *[Sound Name]*** to play the sound\n".format(config["prefix"])
+        string = "Use **/play *[Sound Name]*** to play the sound\n"
 
         for row in data:
             string += "> Name: **{}** | Price: **{:,}**\n".format(row, data[row]["price"])
 
-        await ctx.send(string)
+        await ctx.respond(string)
 
 
-@bot.command(aliases=["play"])
+@bot.slash_command(name="play", description="Play a sound")
 async def pay_to_play(ctx, sound_name):
-    current_points = json_utils.get_user_field(ctx.message.author.id, "points")
+    current_points = json_utils.get_user_field(ctx.author.id, "points")
     cost = json_utils.get_sound_price(sound_name)
 
     if cost is None:
-        await ctx.send("There's no sound with that name ¯\\_(ツ)_/¯")
+        await ctx.respond("There's no sound with that name ¯\\_(ツ)_/¯")
         return
 
     if current_points >= cost:
-        json_utils.update_user(ctx.message.author.id, "points", current_points - cost)
-        await play_sound(ctx.message.author, "downloads/pay_to_play/{}.mp3".format(sound_name))
-
+        await ctx.respond("Playing {}.mp3".format(sound_name))
         await log("Playing {}.mp3{}".format(Fore.YELLOW + sound_name, Fore.RESET))
+
+        json_utils.update_user(ctx.author.id, "points", current_points - cost)
+        await play_sound(ctx.author, "downloads/pay_to_play/{}.mp3".format(sound_name))
     else:
-        await ctx.send("Aha you're poor. You're missing {:,} points".format(
-            json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.message.author.id, "points")))
+        await ctx.respond("Aha you're poor. You're missing {:,} points".format(
+            json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.author.id, "points")))
 
 
-@bot.command(aliases=['give'])
+@bot.slash_command(name="pay", description="Pay amount of points to another user")
 async def pay(ctx, payee, amount):
     if len(payee) > 0 and len(amount) > 0 and int(amount) > 0:
+        if json_utils.get_user_field(ctx.author.id, "points") > int(amount):
+            await gamble.pay_points(ctx.author.id, payee.strip("<@!>"), int(amount))
 
-        if json_utils.get_user_field(ctx.message.author.id, "points") > int(amount):
-            await gamble.pay_points(ctx.message.author.id, payee.strip("<@>"), int(amount))
-            await ctx.send("**{}** paid **{}** - **{:,}** points".format(
-                await gamble.get_user_from_id(bot, ctx.message.author.id),
-                await gamble.get_user_from_id(bot, payee.strip("<@>")),
-                amount))
+            await ctx.respond("**{}** paid **{}** - **{:,}** points".format(
+                await gamble.get_user_from_id(bot, ctx.author.id),
+                await gamble.get_user_from_id(bot, payee.strip("<@!>")), int(amount)))
 
 
-@bot.command()
+@bot.slash_command(name="wan", description="Hello there")
 async def wan(ctx):
-    await play_sound(ctx.message.author, "downloads/hello_there.mp3")
+    await ctx.respond("Hello there")
+    await play_sound(ctx.author, "downloads/hello_there.mp3")
 
 
-@bot.command()
+@bot.slash_command(name="reload", description="Reloads the bot's internal files")
 @commands.is_owner()
-async def restart(ctx):
-    await log("Restarting...")
-    sys.tracebacklimit = 0
-    exit()
-
-
-@bot.command()
-@commands.is_owner()
-async def reload():
+async def reload(ctx):
+    await ctx.respond("Reloading...")
     await log("Reloading JSON files...")
     await json_utils.reload_files()
     await log("Files reloaded")
@@ -196,7 +216,7 @@ async def on_command_error(ctx, error):
 async def thanks(message):
     thank_you_messages = ['thanks obama', 'thank you obama', 'thx obama', 'tanks obama', 'ty obama', 'thank u obama']
     if any(x in message.content.lower() for x in thank_you_messages):
-        await message.channel.send(await json_utils.get_random_youre_welcome())
+        await message.channel.respond(await json_utils.get_random_youre_welcome())
 
 
 # Helper functions
@@ -228,21 +248,23 @@ async def log(input_str):
 
 async def play_sound(member, source):
     if exists(source):
-        singing_channel = member.voice.channel
+        channel = member.voice.channel
 
-        if singing_channel:
-            await singing_channel.connect()
+        if channel:
+            await channel.connect()
 
             voice = bot.voice_clients[0]
+            audio_length = MP3(source).info.length
+
             voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
 
             voice.pause()
             await asyncio.sleep(0.5)
             voice.resume()
 
-            sleep(5)
+            sleep(audio_length + 2)
 
-            await bot.voice_clients[0].disconnect()
+            await voice.disconnect(force=True)
 
 
 bot.run(DISCORD_TOKEN)

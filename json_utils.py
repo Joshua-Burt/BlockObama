@@ -56,9 +56,8 @@ def update_user(member_id, field, value):
 
 
 def get_user_field(member_id, field):
-    json_member = users_file[str(member_id)]
-
-    if json_member is not None:
+    if str(member_id) in users_file:
+        json_member = users_file[str(member_id)]
         return json_member[field]
     return None
 

@@ -20,10 +20,10 @@ async def init():
 
 async def gamble(ctx, bot, wager):
     if not wager.isnumeric() and wager != "all":
-        await ctx.send("What")
+        await ctx.respond("What")
         return
 
-    author = ctx.message.author
+    author = ctx.author
     author_prev_points = int(json_utils.get_user_field(author.id, "points"))
 
     if wager != "all":
@@ -32,11 +32,11 @@ async def gamble(ctx, bot, wager):
         wager = author_prev_points
 
     if wager <= 0:
-        await ctx.send("You can't gamble {} points dumbass".format(wager))
+        await ctx.respond("You can't gamble {} points dumbass".format(wager))
         return
 
     if author_prev_points < wager:
-        await ctx.send("You don't have enough points. You currently have **{:,}** points".format(author_prev_points))
+        await ctx.respond("You don't have enough points. You currently have **{:,}** points".format(author_prev_points))
         return
 
     value = random.random()
@@ -102,11 +102,11 @@ async def gamble(ctx, bot, wager):
         gifted_member_name = await get_user_from_id(bot, gifted_member)
         gifted_member_points = json_utils.get_user_field(gifted_member, "points")
 
-        await ctx.send(' '.join((result, "\n**{}'s** current balance is **{:,}**.\n**{}'s** current balance is **{:,}**."
+        await ctx.respond(' '.join((result, "\n**{}'s** current balance is **{:,}**.\n**{}'s** current balance is **{:,}**."
                                 .format(author, author_curr_points, gifted_member_name, gifted_member_points))))
     # General Output
     else:
-        await ctx.send(' '.join((result, "Their current balance is **{:,}**".format(author_curr_points))))
+        await ctx.respond(' '.join((result, "Their current balance is **{:,}**".format(author_curr_points))))
 
     # Ran outta money
     if author_curr_points <= 0:
@@ -136,7 +136,7 @@ async def points(ctx, bot):
 
         output += "> **{}**:\n> \t{:,} Points \n> \t{:,} Bets\n".format(username, user_points, user_bets)
 
-    await ctx.send("{}".format(output))
+    await ctx.respond("{}".format(output))
 
 
 async def pay_points(from_user, to_user, amount):

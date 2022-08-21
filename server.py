@@ -8,20 +8,20 @@ global process
 process = None
 
 
-async def start(ctx, bot, server_path):
+async def start(ctx, server_path):
     global process
 
     if process:
-        await ctx.send("The server is already running")
+        await ctx.respond("The server is already running")
         print("Server is already running")
     else:
+        await ctx.respond("Starting server...")
+        await ctx.send("It'll be like 2 minutes")
+
         working_directory = os.getcwd()
         os.chdir(server_path)
 
-        process = subprocess.Popen(['start.bat'], stdin=subprocess.PIPE, encoding='utf8')
-
-        # 50 Seconds is arbitrary, it just was the best amount of time for my modded server
-        time.sleep(50)
+        process = subprocess.Popen(['start.bat'], stdin=subprocess.PIPE, creationflags=subprocess.CREATE_NEW_CONSOLE, encoding='utf8')
 
         os.chdir(working_directory)
 
@@ -36,18 +36,18 @@ async def start(ctx, bot, server_path):
         #         ctx.send("I can't tell if the server is running or not, but it's been long enough that it probably is")
         #         break
 
-        await ctx.send("Server started, probably")
+        # await ctx.send("Server started, probably")
 
 
 async def stop(ctx):
     global process
     if process:
         await server_command("stop")
-        await ctx.send("Stopped the server")
+        await ctx.respond("Stopped the server")
         process = None
         os.chdir("C:\\Users\\Turtl\\PycharmProjects\\BlockObama 2.0")
     else:
-        await ctx.send("The server isn't running")
+        await ctx.respond("The server isn't running")
 
 
 async def ping_ip(ip, port):
