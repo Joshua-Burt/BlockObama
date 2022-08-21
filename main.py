@@ -2,12 +2,14 @@ __author__ = "Joshua Burt"
 
 import asyncio
 import datetime
-import sys
 import time
 import json
 import discord
 
 from os.path import exists
+
+import ffmpeg
+from mutagen.mp3 import MP3
 from colorama import Fore
 from time import sleep
 
@@ -189,12 +191,14 @@ async def pay(ctx, payee, amount):
 
 @bot.slash_command(name="wan", description="Hello there")
 async def wan(ctx):
+    await ctx.respond("Hello there")
     await play_sound(ctx.author, "downloads/hello_there.mp3")
 
 
 @bot.slash_command(name="reload", description="Reloads the bot's internal files")
 @commands.is_owner()
 async def reload(ctx):
+    await ctx.respond("Reloading...")
     await log("Reloading JSON files...")
     await json_utils.reload_files()
     await log("Files reloaded")
@@ -244,12 +248,13 @@ async def log(input_str):
 
 async def play_sound(member, source):
     if exists(source):
-        singing_channel = member.voice.channel
+        channel = member.voice.channel
 
-        if singing_channel:
-            await singing_channel.connect()
+        if channel:
+            await channel.connect()
 
             voice = bot.voice_clients[0]
+            audio_length = MP3(source).info.length
 
             voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
 
@@ -257,7 +262,7 @@ async def play_sound(member, source):
             await asyncio.sleep(0.5)
             voice.resume()
 
-            sleep(5)
+            sleep(audio_length + 2)
 
             await voice.disconnect(force=True)
 
