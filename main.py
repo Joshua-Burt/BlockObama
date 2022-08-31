@@ -56,7 +56,8 @@ async def on_member_join(member):
 
 @bot.slash_command(name="say", description="Repeat the inputted message")
 async def say(ctx, message):
-    await ctx.respond(message)
+    await ctx.send(message)
+    await ctx.respond("Said the words", ephemeral=True)
 
 
 @bot.message_command(name="mock", description="Mock the selected message")
@@ -187,6 +188,14 @@ async def pay(ctx, payee, amount):
             await ctx.respond("**{}** paid **{}** - **{:,}** points".format(
                 await gamble.get_user_from_id(bot, ctx.author.id),
                 await gamble.get_user_from_id(bot, payee.strip("<@!>")), int(amount)))
+
+
+@bot.slash_command(name="nick", description="Change the nickname of a user")
+async def nick(ctx, username, new_nick):
+    if len(username) > 0 and len(new_nick) > 0:
+        user = await ctx.guild.fetch_member(username.strip("<@!>"))
+        await user.edit(nick=new_nick)
+        await ctx.respond("Changed {}'s nickname to {}".format(user.name, new_nick), ephemeral=True)
 
 
 @bot.slash_command(name="wan", description="Hello there")

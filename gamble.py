@@ -79,7 +79,7 @@ async def gamble(ctx, bot, wager):
         result = "**{}** has gambled **{:,}** and lost all of it.".format(author, wager)
         jackpot_changed = True
 
-    elif 0.90 < value < 0.99999:
+    elif 0.90 < value < 0.9999:
         gifted_member = random.choice(id_list)
 
         json_utils.update_user(author.id, "points", author_prev_points - wager)
@@ -88,7 +88,7 @@ async def gamble(ctx, bot, wager):
 
         result = "**{}** has gambled **{:,}** and has given it to **{}**.".format(author, wager, gifted_member_name)
 
-    elif value >= 0.99999:
+    elif value >= 0.9999:
         json_utils.update_user(author.id, "points", author_prev_points + await get_jackpot_amount())
         result = "**Congrats!** You've won the jackpot of **{:,}** points!" \
             .format(await get_jackpot_amount(), json_utils.get_user_field(author.id, "points"))
