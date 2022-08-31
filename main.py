@@ -8,11 +8,8 @@ import discord
 
 from os.path import exists
 
-import ffmpeg
 from mutagen.mp3 import MP3
 from colorama import Fore
-from time import sleep
-
 from discord import option
 from discord.ext import commands
 
@@ -30,6 +27,7 @@ DISCORD_TOKEN = config["token"]
 bot = discord.Bot()
 
 points_loop = None
+sound_queue = []
 
 
 @bot.event
@@ -172,8 +170,9 @@ async def pay_to_play(ctx, sound_name):
         await ctx.respond("Playing {}.mp3".format(sound_name))
         await log("Playing {}.mp3{}".format(Fore.YELLOW + sound_name, Fore.RESET))
 
-        json_utils.update_user(ctx.author.id, "points", current_points - cost)
         await play_sound(ctx.author, "downloads/pay_to_play/{}.mp3".format(sound_name))
+
+        json_utils.update_user(ctx.author.id, "points", current_points - cost)
     else:
         await ctx.respond("Aha you're poor. You're missing {:,} points".format(
             json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.author.id, "points")))
@@ -255,23 +254,24 @@ async def log(input_str):
     print(Fore.RESET + timestamp_to_readable(time.time()), Fore.WHITE + input_str)
 
 
-async def play_sound(member, source):
-    if exists(source):
+async def play_sound(member: discord.Member, source_name):
+    if exists(source_name):
         channel = member.voice.channel
+        sound_queue.append(source_name)
 
-        if channel:
-            await channel.connect()
+        if channel and bot.user not in channel.members:
+            voice = await channel.connect()
 
-            voice = bot.voice_clients[0]
-            audio_length = MP3(source).info.length
+            while len(sound_queue) > 0:
+                source = sound_queue.pop(0)
+                audio_length = MP3(source).info.length
+                voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source_name))
 
-            voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
+                voice.pause()
+                await asyncio.sleep(0.5)
+                voice.resume()
 
-            voice.pause()
-            await asyncio.sleep(0.5)
-            voice.resume()
-
-            sleep(audio_length + 2)
+                await asyncio.sleep(audio_length + 1)
 
             await voice.disconnect(force=True)
 
