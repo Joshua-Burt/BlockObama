@@ -14,7 +14,7 @@ Since then, I've added several features, such as:
 
 - Voice channel intros
   - Customizable intro sound clips
-  - Plays once someone joins a voice channel, recommended to be ~3-6 seconds long
+  - Plays once someone joins a voice channel
 
 ## Use Case
 My personal use case is small scale, and I do not believe what I have set up here would scale up to anything more than a single server for friends.
@@ -26,6 +26,6 @@ Having the bot control the Minecraft server was the original purpose, and it def
 The file structure can be found in the docs folder, along with any important info regarding using the bot.
 
 ## Notes
-This bot is not without fault. The server portion is mostly reliable, however it is possible to cause data-loss/corruption rarely. It is recommended to make regular backups of any World files you have
+This bot is not without fault. The server portion is mostly reliable, however it is possible to cause data-loss/corruption to the server rarely. It is recommended to make regular backups of any World files you have
 
 This project is mainly used for myself, so it can change frequently and without warning. Feel free to contribute regardless.
