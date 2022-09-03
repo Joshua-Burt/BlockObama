@@ -42,6 +42,7 @@ async def on_ready():
     await json_utils.init()
     await gamble.init()
 
+    # Loop used to check if members are in voice channels
     global points_loop
     gamble.add_points.start(bot, config["voice_channel"], config["afk_channel"])
 
@@ -69,6 +70,7 @@ async def mock(ctx, message: discord.Message):
 
 @bot.slash_command(name="mock", description="Mock the last message sent")
 async def mock(ctx):
+    # Retrieves the last message sent in the channel
     logs = await ctx.channel.history(limit=1).flatten()
 
     if logs[0].author == bot.user:
@@ -86,6 +88,7 @@ async def mock(ctx):
     default=0
 )
 async def roll(ctx, number_of_dice, number_of_faces, modifier):
+    # Formatting depending on the value of modifier
     if int(modifier) >= 0:
         roll_str = "{}d{} + {}".format(number_of_dice, number_of_faces, modifier)
     else:
@@ -110,6 +113,7 @@ async def start_server(ctx):
     await log("Starting server...")
     await mcserver.start(ctx, config["server_path"])
 
+    # Display that server is running
     game = discord.Game("Minecraft")
     await bot.change_presence(status=discord.Status.online, activity=game)
 
@@ -119,9 +123,14 @@ async def stop_server(ctx):
     await log("Stopped the server")
     await mcserver.stop(ctx)
 
+    # Display that server isn't running
+    game = discord.Game("not Minecraft")
+    await bot.change_presence(status=discord.Status.online, activity=game)
+
 
 @bot.slash_command(name="intro", description="Toggle your intro when joining a voice call")
 async def toggle_intro(ctx):
+    # Get and set the opposite current play_on_enter value
     new_play_on_enter = not json_utils.get_user_field(ctx.author.id, "play_on_enter")
     json_utils.update_user(ctx.author.id, "play_on_enter", new_play_on_enter)
 
@@ -215,13 +224,14 @@ async def reload(ctx):
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-        # TODO: Inform user that the command doesn't exist
+        ctx.respond("That command doesn't exist", ephemeral=True)
         return
     raise error
 
 
 @bot.listen('on_message')
 async def thanks(message):
+    # Anytime one of the below "Thanks"s gets messaged, the bot will reply with a random response
     thank_you_messages = ['thanks obama', 'thank you obama', 'thx obama', 'tanks obama', 'ty obama', 'thank u obama']
     if any(x in message.content.lower() for x in thank_you_messages):
         await message.channel.respond(await json_utils.get_random_youre_welcome())
@@ -233,15 +243,14 @@ async def thanks(message):
 # e.g. "Spongebob" -> "SpOnGeBoB"
 async def mockify(in_str):
     new_string = ""
-    case = True  # true = uppercase, false = lowercase
+    case = True  # True = uppercase, False = lowercase
 
     for i in in_str:
-        if case:
-            new_string += i.upper()
-        else:
-            new_string += i.lower()
+        new_string += i.upper() if case else i.lower()
+
         if i != ' ':
             case = not case
+
     return new_string
 
 
@@ -256,23 +265,29 @@ async def log(input_str):
 
 async def play_sound(member: discord.Member, source_name):
     if exists(source_name):
+        # Get the voice channel the member is currently in
         channel = member.voice.channel
         sound_queue.append(source_name)
 
+        # Verify channel exists, and that the bot isn't already in the channel
         if channel and bot.user not in channel.members:
             voice = await channel.connect()
 
+            # Keep playing the sounds until the queue is empty
             while len(sound_queue) > 0:
                 source = sound_queue.pop(0)
                 audio_length = MP3(source).info.length
                 voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source_name))
 
+                # Supposedly helps with an issue where the sound is sped up
                 voice.pause()
                 await asyncio.sleep(0.5)
                 voice.resume()
 
+                # Wait until the song is finished
                 await asyncio.sleep(audio_length + 1)
 
+            # Disconnect from the channel once all the sounds are played
             await voice.disconnect(force=True)
 
 
