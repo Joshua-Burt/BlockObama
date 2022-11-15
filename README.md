@@ -8,6 +8,7 @@ Since then, I've added several features, such as:
   - Spending points on sound clips to play in voice channels
   - Gain points by spending time in voice channel
   - Lose points by spending time in AFK channel
+  
 - Rolling dice system
   - Simulates a rolling dice using dice notation
   - e.g. The command **/roll 2d20** will simulate rolling 2 d20 dice
@@ -15,6 +16,8 @@ Since then, I've added several features, such as:
 - Voice channel intros
   - Customizable intro sound clips
   - Plays once someone joins a voice channel
+
+- Anyone can change nicknames (if the bot is a higher role than target)
 
 ## Use Case
 My personal use case is small scale, and I do not believe what I have set up here would scale up to anything more than a single server for friends.
