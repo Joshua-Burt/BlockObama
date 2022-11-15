@@ -10,7 +10,7 @@ Since then, I've added several features, such as:
   - Lose points by spending time in AFK channel
 - Rolling dice system
   - Simulates a rolling dice using dice notation
-  - e.g. The command ***{prefix}* roll 2d20** will simulate rolling 2 d20 dice
+  - e.g. The command **/roll 2d20** will simulate rolling 2 d20 dice
 
 - Voice channel intros
   - Customizable intro sound clips
