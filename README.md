@@ -1,4 +1,4 @@
-# BlockObama
+# BlockBot
 ## Overview
 The original purpose of creating this bot was to have a small group of friends be able to start and stop a Minecraft server that runs on my computer.
 
