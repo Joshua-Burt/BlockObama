@@ -26,7 +26,7 @@ with open('json_files/config.json', 'r') as f:
 
 # Constants
 DISCORD_TOKEN = config["token"]
-bot = discord.Bot()
+bot = discord.Bot(intents=discord.Intents.all())
 
 points_loop = None
 sound_queue = []
@@ -250,11 +250,11 @@ async def on_command_error(ctx, error: discord.ext.commands.CommandError):
     raise error
 
 
-@bot.listen('on_message')
-async def thanks(message):
+@bot.event
+async def on_message(message):
     thank_you_messages = ['thanks obama', 'thank you obama', 'thx obama', 'tanks obama', 'ty obama', 'thank u obama']
-    if any(x in message.content.lower() for x in thank_you_messages):
-        await message.channel.respond(await json_utils.get_random_youre_welcome())
+    if message.content.lower() in thank_you_messages:
+        await message.channel.send(await json_utils.get_random_youre_welcome())
 
 
 async def play_sound(member: discord.Member, source_name):
