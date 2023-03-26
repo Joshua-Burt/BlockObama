@@ -238,7 +238,7 @@ async def reload(ctx):
 
     await json_utils.reload_files()
 
-    await ctx.send("Reloaded.")
+    await ctx.respond("Reloaded.", ephemeral=True)
     await log("Files reloaded")
 
 

@@ -1,3 +1,3 @@
 :loop
-py -3 main.py
+python main.py
 goto loop
