@@ -26,8 +26,8 @@ async def init():
     youre_welcomes = youre_welcomes_data
 
 
-def reload_files():
-    init()
+async def reload_files():
+    await init()
 
 
 # USER JSON

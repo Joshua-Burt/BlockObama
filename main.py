@@ -4,20 +4,22 @@ import asyncio
 import datetime
 import time
 import json
-import discord
-
 from os.path import exists
 
-from mutagen.mp3 import MP3
+import discord
+
 from colorama import Fore
 from discord import option
 from discord.ext import commands
 
 # Local Files
+from mutagen.mp3 import MP3
+
 import json_utils
 import roll as rl
 import server as mcserver
 import gamble
+import sounds
 
 with open('json_files/config.json', 'r') as f:
     config = json.load(f)
@@ -36,11 +38,12 @@ async def on_ready():
     await log('Logged in as {0.user}'.format(bot) + Fore.YELLOW + '\nPowered on [o.o]' + Fore.RESET)
     print("---------------------------------")
 
-    game = discord.Game("not Minecraft")
+    game = discord.Game("your mom")
     await bot.change_presence(status=discord.Status.online, activity=game)
 
     await json_utils.init()
     await gamble.init()
+    await sounds.init(play_sound)
 
     global points_loop
     gamble.add_points.start(bot, config["voice_channel"], config["afk_channel"])
@@ -119,9 +122,21 @@ async def stop_server(ctx):
     await log("Stopped the server")
     await mcserver.stop(ctx)
 
+    game = discord.Game("your mom")
+    await bot.change_presence(status=discord.Status.online, activity=game)
 
-@bot.slash_command(name="intro", description="Toggle your intro when joining a voice call")
-async def toggle_intro(ctx):
+
+@option(
+    "intro_mp3",
+    description="How much to add/subtract from the total roll",
+    required=False,
+    default=0
+)
+@bot.slash_command(name="intro", description="Toggle your intro when joining a voice call, or change your intro")
+async def intro(ctx):
+    if ctx.message.attachments:
+        return
+
     new_play_on_enter = not json_utils.get_user_field(ctx.author.id, "play_on_enter")
     json_utils.update_user(ctx.author.id, "play_on_enter", new_play_on_enter)
 
@@ -158,6 +173,12 @@ async def shop(ctx):
 
 
 @bot.slash_command(name="play", description="Play a sound")
+@option(
+    "sound_name",
+    description="Name of the sound from the shop",
+    required=False,
+    default=""
+)
 async def pay_to_play(ctx, sound_name):
     current_points = json_utils.get_user_field(ctx.author.id, "points")
     cost = json_utils.get_sound_price(sound_name)
@@ -192,9 +213,16 @@ async def pay(ctx, payee, amount):
 @bot.slash_command(name="nick", description="Change the nickname of a user")
 async def nick(ctx, username, new_nick):
     if len(username) > 0 and len(new_nick) > 0:
-        user = await ctx.guild.fetch_member(username.strip("<@!>"))
-        await user.edit(nick=new_nick)
-        await ctx.respond("Changed {}'s nickname to {}".format(user.name, new_nick), ephemeral=True)
+        try:
+            user = await ctx.guild.fetch_member(username.strip("<@!>"))
+
+        # Intercepts an exception when a user does not provide a snowflake.
+        except discord.errors.HTTPException:
+            ctx.respond("Please include the '@' at the start of the name of the user you wish to change", ephemeral=True)
+
+        else:
+            await user.edit(nick=new_nick)
+            await ctx.respond("Changed {}'s nickname to {}".format(user.name, new_nick), ephemeral=True)
 
 
 @bot.slash_command(name="wan", description="Hello there")
@@ -206,14 +234,16 @@ async def wan(ctx):
 @bot.slash_command(name="reload", description="Reloads the bot's internal files")
 @commands.is_owner()
 async def reload(ctx):
-    await ctx.respond("Reloading...")
     await log("Reloading JSON files...")
+
     await json_utils.reload_files()
+
+    await ctx.send("Reloaded.")
     await log("Files reloaded")
 
 
 @bot.event
-async def on_command_error(ctx, error):
+async def on_command_error(ctx, error: discord.ext.commands.CommandError):
     if isinstance(error, commands.CommandNotFound):
         # TODO: Inform user that the command doesn't exist
         return
@@ -225,6 +255,30 @@ async def thanks(message):
     thank_you_messages = ['thanks obama', 'thank you obama', 'thx obama', 'tanks obama', 'ty obama', 'thank u obama']
     if any(x in message.content.lower() for x in thank_you_messages):
         await message.channel.respond(await json_utils.get_random_youre_welcome())
+
+
+async def play_sound(member: discord.Member, source_name):
+
+    if exists(source_name):
+
+        channel = member.voice.channel
+        sound_queue.append(source_name)
+
+        if channel and bot.user not in channel.members:
+            voice = await channel.connect()
+
+            while len(sound_queue) > 0:
+                source = sound_queue.pop(0)
+                audio_length = MP3(source).info.length
+                voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source_name))
+
+                voice.pause()
+                await asyncio.sleep(0.5)
+                voice.resume()
+
+                await asyncio.sleep(audio_length + 2)
+
+            await voice.disconnect(force=True)
 
 
 # Helper functions
@@ -254,26 +308,9 @@ async def log(input_str):
     print(Fore.RESET + timestamp_to_readable(time.time()), Fore.WHITE + input_str)
 
 
-async def play_sound(member: discord.Member, source_name):
-    if exists(source_name):
-        channel = member.voice.channel
-        sound_queue.append(source_name)
-
-        if channel and bot.user not in channel.members:
-            voice = await channel.connect()
-
-            while len(sound_queue) > 0:
-                source = sound_queue.pop(0)
-                audio_length = MP3(source).info.length
-                voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source_name))
-
-                voice.pause()
-                await asyncio.sleep(0.5)
-                voice.resume()
-
-                await asyncio.sleep(audio_length + 1)
-
-            await voice.disconnect(force=True)
+class Error (Exception):
+    def __init__ (self, message):
+        super().__init__(Fore.RED + message)
 
 
 bot.run(DISCORD_TOKEN)
