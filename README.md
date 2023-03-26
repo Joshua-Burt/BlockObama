@@ -3,6 +3,11 @@
 The original purpose of creating this bot was to have a small group of friends be able to start and stop a Minecraft server that runs on my computer.
 
 Since then, I've added several features, such as:
+
+- Voice channel intros
+  - Customizable intro sound clips
+  - Plays once someone joins a voice channel
+  
 - Points system
   - Betting with adjustable odds
   - Spending points on sound clips to play in voice channels
@@ -13,9 +18,6 @@ Since then, I've added several features, such as:
   - Simulates a rolling dice using dice notation
   - e.g. The command **/roll 2d20** will simulate rolling 2 d20 dice
 
-- Voice channel intros
-  - Customizable intro sound clips
-  - Plays once someone joins a voice channel
 
 - Anyone can change nicknames (if the bot is a higher role than target)
 
