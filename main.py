@@ -218,7 +218,7 @@ async def nick(ctx, username, new_nick):
 
         # Intercepts an exception when a user does not provide a snowflake.
         except discord.errors.HTTPException:
-            ctx.respond("Please include the '@' at the start of the name of the user you wish to change", ephemeral=True)
+            await ctx.respond("Please include the '@' at the start of the name of the user you wish to change", ephemeral=True)
 
         else:
             await user.edit(nick=new_nick)
