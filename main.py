@@ -270,7 +270,7 @@ async def play_sound(member: discord.Member, source_name):
             while len(sound_queue) > 0:
                 source = sound_queue.pop(0)
                 audio_length = MP3(source).info.length
-                voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source_name))
+                voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
 
                 voice.pause()
                 await asyncio.sleep(0.5)

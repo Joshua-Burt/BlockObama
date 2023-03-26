@@ -23,10 +23,12 @@ async def init(play_function):
                 value=filenames[i]
             )
         )
-    n = 25
 
-    # using list comprehension
-    options = [options[i * n:(i + 1) * n] for i in range((len(options) + n - 1) // n)]
+    # For sound selection
+    # n = 25
+    #
+    # # using list comprehension
+    # options = [options[i * n:(i + 1) * n] for i in range((len(options) + n - 1) // n)]
 
 
 # async def create_select(ctx):
