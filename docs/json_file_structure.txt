@@ -30,7 +30,6 @@ play_on_enter - whether the member's intro will play when they enter a voice cha
 config.json
 
 {
-    "prefix": "!",
     "token": "Nzk3NjUxNTDUMMYDATA4dNOTAREALKEYxfdT4hT",
     "server_path": "C:\\Users\\UserName\\Desktop\\Server",
     "gamble_channel": 7410298300501223,
@@ -38,7 +37,6 @@ config.json
     "afk_channel": 91932002025578199
 }
 
-prefix - the prefix the bot listens for to know its a command
 token - the Discord bot's token
 server_path - the path to a Minecraft server with a start.bat in it
 gamble_channel - channel id of a text channel that users can use the bet command
