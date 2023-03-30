@@ -213,6 +213,10 @@ async def pay(ctx, payee, amount):
 @bot.slash_command(name="nick", description="Change the nickname of a user")
 async def nick(ctx, username, new_nick):
     if len(username) > 0 and len(new_nick) > 0:
+        if len(new_nick) > 32:
+            await ctx.respond("Nicknames cannot be longer than 32 characters", ephemeral=True)
+            return
+
         try:
             user = await ctx.guild.fetch_member(username.strip("<@!>"))
 
