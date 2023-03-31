@@ -1,12 +1,12 @@
 # BlockBot
 ## Overview
-The original purpose of creating this bot was to have a small group of friends be able to start and stop a Minecraft server that runs on my computer.
-
-Since then, I've added several features, such as:
 
 - Voice channel intros
   - Customizable intro sound clips
   - Plays once someone joins a voice channel
+  
+- Controlling a Minecraft server
+  - Users can start and stop a server hosted on the same machine
   
 - Points system
   - Betting with adjustable odds
@@ -22,9 +22,10 @@ Since then, I've added several features, such as:
 - Anyone can change nicknames (if the bot is a higher role than target)
 
 ## Use Case
-My personal use case is small scale, and I do not believe what I have set up here would scale up to anything more than a single server for friends.
 
 Having the bot control the Minecraft server was the original purpose, and it definitely serves it. Anyone is able to start the server and close it when they are finished, so the server does not need to be running 24/7.
+
+The intros are a great success in my experience, as it as a personal touch to every user
 
 ## Setup
 
