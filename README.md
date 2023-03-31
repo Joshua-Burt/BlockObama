@@ -31,6 +31,8 @@ The intros are a great success in my experience, as it as a personal touch to ev
 
 The file structure can be found in the docs folder, along with any important info regarding using the bot.
 
+Recommended to use [Windows Terminal](https://apps.microsoft.com/store/detail/windows-terminal/9N0DX20HK701) on Windows (or equivalent on other operating systems) to take full advantage of the log colouring.
+
 ## Notes
 This bot is not without fault. The server portion is mostly reliable, however it is possible to cause data-loss/corruption to the server rarely. It is recommended to make regular backups of any World files you have
 
