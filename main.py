@@ -5,6 +5,7 @@ import datetime
 import time
 import json
 from os.path import exists
+from pathlib import Path
 
 import discord
 
@@ -125,7 +126,6 @@ async def stop_server(ctx):
     game = discord.Game("your mom")
     await bot.change_presence(status=discord.Status.online, activity=game)
 
-
 @option(
     "intro_mp3",
     description="How much to add/subtract from the total roll",
@@ -135,12 +135,42 @@ async def stop_server(ctx):
 @bot.slash_command(name="intro", description="Toggle your intro when joining a voice call, or change your intro")
 async def intro(ctx):
     if ctx.message.attachments:
+        print(ctx.message.attachments)
         return
 
     new_play_on_enter = not json_utils.get_user_field(ctx.author.id, "play_on_enter")
     json_utils.update_user(ctx.author.id, "play_on_enter", new_play_on_enter)
 
-    await ctx.respond(("Your intro is now ON" if new_play_on_enter else "Your intro is now OFF"))
+    await ctx.respond(("Your intro is now ON" if new_play_on_enter else "Your intro is now OFF"), ephemeral=True)
+
+
+@bot.slash_command(name="upload")
+@option(
+    "attachment",
+    discord.Attachment,
+    description="An .mp3 file to be used as your intro. Max {} seconds.".format(config["max_intro_length"]),
+    required=True,
+)
+async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Attachment):
+    if attachment.content_type == "audio/mpeg":
+        file = await attachment.to_file()
+
+        # Verify the length is less than the max
+        if MP3(file.fp).info.length > config["max_intro_length"]:
+            await ctx.respond("Intros must be less than", config["max_intro_length"])
+            return
+
+        # Apply the new file
+        file_name = json_utils.get_user_field(ctx.author.id, "file_name")
+
+        await attachment.save(Path(str(Path.cwd()) + "/downloads/intros/{}".format(file_name)))
+        await ctx.respond("Your intro has been changed")
+    else:
+        await ctx.respond("Please upload an .mp3 file")
+    #
+    # var = attachment.content_type
+    # await attachment.save(Path("/downloads/intros/" + ))
+
 
 
 @bot.event
