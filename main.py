@@ -2,6 +2,7 @@ __author__ = "Joshua Burt"
 
 import asyncio
 import datetime
+import os
 import time
 import json
 from os.path import exists
@@ -340,5 +341,23 @@ class Error (Exception):
     def __init__ (self, message):
         super().__init__(Fore.RED + message)
 
+
+def main():
+    # Verify .json files exist
+
+    # config.json
+    if not os.path.exists("json_files/config.json"):
+        pass
+
+    # jackpot.json
+    if not os.path.exists("json_files/jackpot.json"):
+        pass
+    # users.json
+    if not os.path.exists("json_files/users.json"):
+        pass
+
+
+if __name__ == "main":
+    main()
 
 bot.run(DISCORD_TOKEN)
