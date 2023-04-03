@@ -2,7 +2,6 @@ __author__ = "Joshua Burt"
 
 import asyncio
 import datetime
-import os
 import time
 import json
 from os.path import exists
@@ -43,7 +42,12 @@ async def on_ready():
     game = discord.Game("your mom")
     await bot.change_presence(status=discord.Status.online, activity=game)
 
-    await json_utils.init()
+    json_message = await json_utils.init()
+
+    if json_message is not True:
+        print(Fore.RED + json_message)
+        await bot.close()
+
     await gamble.init()
     await sounds.init(play_sound)
 
@@ -341,23 +345,5 @@ class Error (Exception):
     def __init__ (self, message):
         super().__init__(Fore.RED + message)
 
-
-def main():
-    # Verify .json files exist
-
-    # config.json
-    if not os.path.exists("json_files/config.json"):
-        pass
-
-    # jackpot.json
-    if not os.path.exists("json_files/jackpot.json"):
-        pass
-    # users.json
-    if not os.path.exists("json_files/users.json"):
-        pass
-
-
-if __name__ == "main":
-    main()
 
 bot.run(DISCORD_TOKEN)

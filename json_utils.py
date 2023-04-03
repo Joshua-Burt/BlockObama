@@ -1,5 +1,8 @@
 import json
+import os
 import random
+import shutil
+import sys
 
 global users_file
 global price_file
@@ -7,6 +10,12 @@ global youre_welcomes
 
 
 async def init():
+    valid_files = await verify_files()
+
+    # Tell main that the files are not valid, and bot needs to be logged out
+    if valid_files is not True:
+        return valid_files
+
     with open('json_files/users.json', 'r') as f:
         user_data = json.load(f)
 
@@ -24,6 +33,8 @@ async def init():
 
     global youre_welcomes
     youre_welcomes = youre_welcomes_data
+
+    return True
 
 
 async def reload_files():
@@ -88,3 +99,37 @@ def set_sound_price(sound_name):
 async def get_random_youre_welcome():
     global youre_welcomes
     return random.choice(youre_welcomes)
+
+
+async def verify_files():
+    # Verify .json files exist
+
+    # config.json
+    if not os.path.exists("json_files/config.json"):
+        if os.path.exists("default/config.json"):
+            shutil.copy("default/config.json", "json_files/config.json")
+        else:
+            return "Default file config.json not detected"
+
+    # item_prices.json
+    if not os.path.exists("json_files/item_prices.json"):
+        if os.path.exists("default/item_prices.json"):
+            shutil.copy("default/item_prices.json", "json_files/item_prices.json")
+        else:
+            return "Default file item_prices.json not detected"
+
+    # jackpot.json
+    if not os.path.exists("json_files/jackpot.json"):
+        if os.path.exists("default/jackpot.json"):
+            shutil.copy("default/jackpot.json", "json_files/jackpot.json")
+        else:
+            return "Default file jackpot.json not detected"
+
+    # users.json
+    if not os.path.exists("json_files/users.json"):
+        if os.path.exists("default/users.json"):
+            shutil.copy("default/users.json", "json_files/users.json")
+        else:
+            return "Default file users.json not detected"
+
+    return True
