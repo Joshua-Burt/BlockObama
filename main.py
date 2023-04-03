@@ -1,8 +1,6 @@
 __author__ = "Joshua Burt"
 
 import asyncio
-import datetime
-import time
 import json
 from os.path import exists
 from pathlib import Path
@@ -15,6 +13,7 @@ from discord.ext import commands
 
 # Local Files
 from mutagen.mp3 import MP3
+from log import log, error
 
 import json_utils
 import roll as rl
@@ -27,6 +26,11 @@ with open('json_files/config.json', 'r') as f:
 
 # Constants
 DISCORD_TOKEN = config["token"]
+
+if DISCORD_TOKEN == "":
+    print(Fore.RED + "Default token given. Please change token in config.json")
+    exit()
+
 bot = discord.Bot(intents=discord.Intents.all())
 
 points_loop = None
@@ -43,9 +47,9 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=game)
 
     # Verify that the required .json files exist
-    json_message = await json_utils.init()
-    if json_message is not True:
-        print(Fore.RED + json_message)
+    json_msg = await json_utils.init()
+    if json_msg is not True:
+        await error(json_msg)
         await bot.close()
 
     await gamble.init()
@@ -330,15 +334,6 @@ async def mockify(in_str):
         if i != ' ':
             case = not case
     return new_string
-
-
-def timestamp_to_readable(timestamp):
-    value = datetime.datetime.fromtimestamp(timestamp)
-    return value.strftime('%Y-%m-%d %H:%M:%S -')
-
-
-async def log(input_str):
-    print(Fore.RESET + timestamp_to_readable(time.time()), Fore.WHITE + input_str)
 
 
 class Error (Exception):
