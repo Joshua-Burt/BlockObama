@@ -42,8 +42,8 @@ async def on_ready():
     game = discord.Game("your mom")
     await bot.change_presence(status=discord.Status.online, activity=game)
 
+    # Verify that the required .json files exist
     json_message = await json_utils.init()
-
     if json_message is not True:
         print(Fore.RED + json_message)
         await bot.close()

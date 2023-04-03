@@ -104,32 +104,16 @@ async def get_random_youre_welcome():
 async def verify_files():
     # Verify .json files exist
 
-    # config.json
-    if not os.path.exists("json_files/config.json"):
-        if os.path.exists("default/config.json"):
-            shutil.copy("default/config.json", "json_files/config.json")
-        else:
-            return "Default file config.json not detected"
+    file_names = ["config", "item_prices", "jackpot", "users"]
 
-    # item_prices.json
-    if not os.path.exists("json_files/item_prices.json"):
-        if os.path.exists("default/item_prices.json"):
-            shutil.copy("default/item_prices.json", "json_files/item_prices.json")
-        else:
-            return "Default file item_prices.json not detected"
+    for fn in file_names:
+        if os.path.exists("json_files/" + fn + ".json"):
+            continue
 
-    # jackpot.json
-    if not os.path.exists("json_files/jackpot.json"):
-        if os.path.exists("default/jackpot.json"):
-            shutil.copy("default/jackpot.json", "json_files/jackpot.json")
+        if os.path.exists("default/" + fn + ".json"):
+            print("File json_files/" + fn + ".json does not exist. Creating file.")
+            shutil.copy("default/" + fn + ".json", "json_files/" + fn + ".json")
         else:
-            return "Default file jackpot.json not detected"
-
-    # users.json
-    if not os.path.exists("json_files/users.json"):
-        if os.path.exists("default/users.json"):
-            shutil.copy("default/users.json", "json_files/users.json")
-        else:
-            return "Default file users.json not detected"
+            return "Default file " + fn + " not detected"
 
     return True
