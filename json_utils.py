@@ -3,6 +3,8 @@ import os
 import random
 import shutil
 
+from log import log
+
 global users_file
 global price_file
 global youre_welcomes
@@ -100,19 +102,25 @@ async def get_random_youre_welcome():
     return random.choice(youre_welcomes)
 
 
+async def verify_file(fn):
+    if os.path.exists("json_files/" + fn + ".json"):
+        return True
+
+    if os.path.exists("default/" + fn + ".json"):
+        await log("File json_files/" + fn + ".json does not exist. Creating file.")
+        shutil.copy("default/" + fn + ".json", "json_files/" + fn + ".json")
+        return True
+    else:
+        return "Default file " + fn + " not detected"
+
+
 async def verify_files():
     # Verify .json files exist
-
     file_names = ["config", "item_prices", "jackpot", "users"]
 
     for fn in file_names:
-        if os.path.exists("json_files/" + fn + ".json"):
-            continue
-
-        if os.path.exists("default/" + fn + ".json"):
-            print("File json_files/" + fn + ".json does not exist. Creating file.")
-            shutil.copy("default/" + fn + ".json", "json_files/" + fn + ".json")
-        else:
-            return "Default file " + fn + " not detected"
+        verify = await verify_file(fn)
+        if verify is not True:
+            return verify
 
     return True
