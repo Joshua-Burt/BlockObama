@@ -50,14 +50,14 @@ async def on_ready():
     await log(f'Logged in as {bot.user}' + Fore.YELLOW + '\nPowered on [o.o]' + Fore.RESET)
     print("---------------------------------")
 
-    game = discord.Game("your mom")
-    await bot.change_presence(status=discord.Status.online, activity=game)
-
     # Verify that the required .json files exist
     json_msg = await json_utils.init()
     if json_msg is not True:
         await error(json_msg)
         await bot.close()
+
+    game = discord.Game(config["default_activity"])
+    await bot.change_presence(status=discord.Status.online, activity=game)
 
     await gamble.init()
     await sounds.init(play_sound)
@@ -164,7 +164,7 @@ async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Atta
 
         # Verify the length is less than the max
         if MP3(file.fp).info.length > config["max_intro_length"]:
-            await ctx.respond("Intros must be less than" + str(config["max_intro_length"]))
+            await ctx.respond(f"Intros must be less than {str(config['max_intro_length'])}")
             return
 
         # Apply the new file
@@ -173,7 +173,7 @@ async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Atta
         await attachment.save(Path(str(Path.cwd()) + f"/downloads/intros/{file_name}"))
 
         await ctx.respond("Your intro has been changed")
-        await log("Changed " + str(ctx.author) + "'s intro")
+        await log(f"Changed {str(ctx.author)}'s intro")
     else:
         await ctx.respond("Please upload an .mp3 file")
 
