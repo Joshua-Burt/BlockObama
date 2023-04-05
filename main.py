@@ -47,7 +47,7 @@ sound_queue = []
 @bot.event
 async def on_ready():
     # Startup printing, username, etc.
-    await log('Logged in as {0.user}'.format(bot) + Fore.YELLOW + '\nPowered on [o.o]' + Fore.RESET)
+    await log(f'Logged in as {bot.user}' + Fore.YELLOW + '\nPowered on [o.o]' + Fore.RESET)
     print("---------------------------------")
 
     game = discord.Game("your mom")
@@ -68,7 +68,7 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
-    await log("Adding member {}".format(member))
+    await log(f"Adding member {member}")
     json_utils.add_user(member.id)
 
 
@@ -107,9 +107,9 @@ async def mock(ctx):
 )
 async def roll(ctx, number_of_dice, number_of_faces, modifier):
     if int(modifier) >= 0:
-        roll_str = "{}d{} + {}".format(number_of_dice, number_of_faces, modifier)
+        roll_str = f"{number_of_dice}d{number_of_faces} + {modifier}"
     else:
-        roll_str = "{}d{} - {}".format(number_of_dice, number_of_faces, abs(int(modifier)))
+        roll_str = f"{number_of_dice}d{number_of_faces} - {abs(int(modifier))}"
 
     await rl.roll(ctx, roll_str)
 
@@ -142,25 +142,20 @@ async def stop_server(ctx):
     game = discord.Game("your mom")
     await bot.change_presence(status=discord.Status.online, activity=game)
 
-@option(
-    "intro_mp3",
-    description="How much to add/subtract from the total roll",
-    required=False,
-    default=0
-)
+
 @bot.slash_command(name="intro", description="Toggle your intro when joining a voice call")
 async def intro(ctx):
     new_play_on_enter = not json_utils.get_user_field(ctx.author.id, "play_on_enter")
     json_utils.update_user(ctx.author.id, "play_on_enter", new_play_on_enter)
 
-    await ctx.respond(("Your intro is now ON" if new_play_on_enter else "Your intro is now OFF"), ephemeral=True)
+    await ctx.respond("Your intro is now " + ("ON" if new_play_on_enter else "OFF"), ephemeral=True)
 
 
 @bot.slash_command(name="upload", description="Upload an .mp3 file to change your intro",)
 @option(
     "attachment",
     discord.Attachment,
-    description="An .mp3 file to be used as your intro. Max {} seconds.".format(config["max_intro_length"]),
+    description=f"An .mp3 file to be used as your intro. Max {config['max_intro_length']} seconds.",
     required=True,
 )
 async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Attachment):
@@ -175,7 +170,7 @@ async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Atta
         # Apply the new file
         file_name = json_utils.get_user_field(ctx.author.id, "file_name")
 
-        await attachment.save(Path(str(Path.cwd()) + "/downloads/intros/{}".format(file_name)))
+        await attachment.save(Path(str(Path.cwd()) + f"/downloads/intros/{file_name}"))
 
         await ctx.respond("Your intro has been changed")
         await log("Changed " + str(ctx.author) + "'s intro")
@@ -206,8 +201,8 @@ async def shop(ctx):
 
         string = "Use **/play *[Sound Name]*** to play the sound\n"
 
-        for row in data:
-            string += "> Name: **{}** | Price: **{:,}**\n".format(row, data[row]["price"])
+        for sound_name in data:
+            string += f"> Name: **{sound_name}** | Price: **{data[sound_name]['price']:,}**\n"
 
         await ctx.respond(string)
 
@@ -216,7 +211,7 @@ async def shop(ctx):
 @option(
     "sound_name",
     description="Name of the sound from the shop",
-    required=False,
+    required=True,
     default=""
 )
 async def pay_to_play(ctx, sound_name):
@@ -228,10 +223,10 @@ async def pay_to_play(ctx, sound_name):
         return
 
     if current_points >= cost:
-        await ctx.respond("Playing {}.mp3".format(sound_name))
-        await log("Playing {}.mp3{}".format(Fore.YELLOW + sound_name, Fore.RESET))
+        await ctx.respond(f"Playing {sound_name}.mp3")
+        await log(f"Playing {Fore.YELLOW + sound_name}.mp3{Fore.RESET}")
 
-        await play_sound(ctx.author, "downloads/pay_to_play/{}.mp3".format(sound_name))
+        await play_sound(ctx.author, f"downloads/pay_to_play/{sound_name}.mp3")
 
         json_utils.update_user(ctx.author.id, "points", current_points - cost)
     else:
@@ -266,7 +261,7 @@ async def nick(ctx, username, new_nick):
 
         else:
             await user.edit(nick=new_nick)
-            await ctx.respond("Changed {}'s nickname to {}".format(user.name, new_nick), ephemeral=True)
+            await ctx.respond(f"Changed {user.name}'s nickname to {new_nick}", ephemeral=True)
 
 
 @bot.slash_command(name="wan", description="Hello there")
