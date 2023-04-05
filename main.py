@@ -2,6 +2,7 @@ __author__ = "Joshua Burt"
 
 import asyncio
 import json
+import sys
 from os.path import exists
 from pathlib import Path
 
@@ -21,6 +22,12 @@ import server as mcserver
 import gamble
 import sounds
 
+# Load config file to obtain the token
+config_integrity = json_utils.verify_file("config")
+if config_integrity is not True:
+    print(config_integrity)
+    sys.exit()
+
 with open('json_files/config.json', 'r') as f:
     config = json.load(f)
 
@@ -29,7 +36,7 @@ DISCORD_TOKEN = config["token"]
 
 if DISCORD_TOKEN == "":
     print(Fore.RED + "Default token given. Please change token in config.json")
-    exit()
+    sys.exit()
 
 bot = discord.Bot(intents=discord.Intents.all())
 

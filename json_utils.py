@@ -102,12 +102,12 @@ async def get_random_youre_welcome():
     return random.choice(youre_welcomes)
 
 
-async def verify_file(fn):
+def verify_file(fn):
     if os.path.exists("json_files/" + fn + ".json"):
         return True
 
     if os.path.exists("default/" + fn + ".json"):
-        await log("File json_files/" + fn + ".json does not exist. Creating file.")
+        print("File json_files/" + fn + ".json does not exist. Creating file.")
         shutil.copy("default/" + fn + ".json", "json_files/" + fn + ".json")
         return True
     else:
@@ -119,7 +119,7 @@ async def verify_files():
     file_names = ["config", "item_prices", "jackpot", "users"]
 
     for fn in file_names:
-        verify = await verify_file(fn)
+        verify = verify_file(fn)
         if verify is not True:
             return verify
 
