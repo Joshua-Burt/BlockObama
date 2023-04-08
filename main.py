@@ -173,7 +173,7 @@ async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Atta
         await attachment.save(Path(str(Path.cwd()) + f"/downloads/intros/{file_name}"))
 
         await ctx.respond("Your intro has been changed")
-        await log(f"Changed {str(ctx.author)}'s intro")
+        await log(f"Changed {Fore.YELLOW + str(ctx.author) + Fore.RESET}'s intro")
     else:
         await ctx.respond("Please upload an .mp3 file")
 
