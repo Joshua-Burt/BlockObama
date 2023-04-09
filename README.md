@@ -25,7 +25,7 @@
 
 Having the bot control the Minecraft server was the original purpose, and it definitely serves it. Anyone is able to start the server and close it when they are finished, so the server does not need to be running 24/7.
 
-The intros are a great success in my experience, as it as a personal touch to every user
+The intros are a great success in my experience, as it as a personal touch to every user.
 
 ## Setup
 
