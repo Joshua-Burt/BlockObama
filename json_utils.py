@@ -44,16 +44,17 @@ async def reload_files():
 
 # USER JSON
 def add_user(member_id):
-    users_file.append({
-        member_id
-    })
+    if get_user_field(member_id, "file_name") is None:
+        users_file[str(member_id)] = {
+            "file_name": str(member_id) + ".mp3",
+            "points": 100,
+            "bets": 0,
+            "play_on_enter": False
+        }
 
-    users_file[member_id].append({
-        "file_name": "None",
-        "points": 100,
-        "bets": 0,
-        "play_on_enter": False
-    })
+        # Dump into file
+        with open('json_files/users.json', 'w') as f:
+            json.dump(users_file, f, indent=4)
 
 
 def update_user(member_id, field, value):

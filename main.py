@@ -68,7 +68,7 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
-    await log(f"Adding member {member}")
+    await log(f"Adding member {Fore.YELLOW + member + Fore.RESET}")
     json_utils.add_user(member.id)
 
 
@@ -151,7 +151,7 @@ async def intro(ctx):
     await ctx.respond("Your intro is now " + ("ON" if new_play_on_enter else "OFF"), ephemeral=True)
 
 
-@bot.slash_command(name="upload", description="Upload an .mp3 file to change your intro",)
+@bot.slash_command(name="upload", description="Upload an .mp3 file to change your intro", )
 @option(
     "attachment",
     discord.Attachment,
@@ -257,7 +257,8 @@ async def nick(ctx, username, new_nick):
 
         # Intercepts an exception when a user does not provide a snowflake.
         except discord.errors.HTTPException:
-            await ctx.respond("Please include the '@' at the start of the name of the user you wish to change", ephemeral=True)
+            await ctx.respond("Please include the '@' at the start of the name of the user you wish to change",
+                              ephemeral=True)
 
         else:
             await user.edit(nick=new_nick)
@@ -297,7 +298,6 @@ async def on_message(message):
 
 
 async def play_sound(member: discord.Member, source_name):
-
     if exists(source_name):
 
         channel = member.voice.channel
@@ -338,8 +338,8 @@ async def mockify(in_str):
     return new_string
 
 
-class Error (Exception):
-    def __init__ (self, message):
+class Error(Exception):
+    def __init__(self, message):
         super().__init__(Fore.RED + message)
 
 
