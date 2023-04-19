@@ -13,8 +13,6 @@ from discord.ext import commands
 
 # Local Files
 from mutagen.mp3 import MP3
-
-import src.json_utils
 from log import log, error
 
 import json_utils
@@ -112,8 +110,8 @@ async def pay(ctx, payee, amount):
             await gamble.pay_points(ctx.author.id, payee.strip("<@!>"), int(amount))
 
             await ctx.respond("**{}** paid **{}** - **{:,}** points".format(
-                await src.json_utils.get_user_from_id(ctx.author.id),
-                await src.json_utils.get_user_from_id(payee.strip("<@!>")), int(amount)))
+                await json_utils.get_user_from_id(ctx.author.id),
+                await json_utils.get_user_from_id(payee.strip("<@!>")), int(amount)))
 
 
 @bot.slash_command(name="nick", description="Change the nickname of a user")
