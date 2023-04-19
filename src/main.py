@@ -57,12 +57,13 @@ async def on_ready():
         await error(json_msg)
         await bot.close()
 
-    game = discord.Game(config["default_activity"])
-    await bot.change_presence(status=discord.Status.online, activity=game)
-
     await intro.init(config["max_intro_length"])
     await gamble.init()
     await sounds.init(play_sound)
+
+
+    game = discord.Game(config["default_activity"])
+    await bot.change_presence(status=discord.Status.online, activity=game)
 
     global points_loop
     gamble.add_points.start(bot, config["voice_channel"], config["afk_channel"])
@@ -81,7 +82,7 @@ async def say(ctx, message):
 
 
 @bot.message_command(name="mock_message", description="Mock the selected message")
-async def mock(ctx, message: discord.Message):
+async def mock_message(ctx, message: discord.Message):
     if message.author == bot.user:
         await ctx.respond('no')
     else:

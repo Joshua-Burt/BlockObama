@@ -9,7 +9,6 @@ from bot import bot
 from src import json_utils, sounds
 from log import log
 
-
 max_length = 0
 
 
