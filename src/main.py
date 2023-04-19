@@ -21,6 +21,7 @@ import roll as rl
 import server as mcserver
 import gamble
 import sounds
+from bot import bot
 
 # Load config file to obtain the token
 config_integrity = json_utils.verify_file("config")
@@ -38,7 +39,6 @@ if DISCORD_TOKEN == "":
     print(Fore.RED + "Default token given. Please change token in config.json")
     sys.exit()
 
-bot = discord.Bot(intents=discord.Intents.all())
 
 points_loop = None
 sound_queue = []
@@ -162,27 +162,13 @@ async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Atta
         # Apply the new file
         file_name = json_utils.get_user_field(ctx.author.id, "file_name")
 
-        await attachment.save(Path(str(Path.cwd()) + f"/downloads/intros/{file_name}"))
+        await attachment.save(Path(str(Path.cwd()) + f"../downloads/intros/{file_name}"))
 
         await ctx.respond("Your intro has been changed")
         await log(f"Changed {Fore.YELLOW + str(ctx.author) + Fore.RESET}'s intro")
     else:
         await ctx.respond("Please upload an .mp3 file")
 
-@bot.slash_command(name="roll", description="Roll a number of various sided dice")
-@option(
-    "modifier",
-    description="How much to add/subtract from the total roll",
-    required=False,
-    default=0
-)
-async def roll(ctx, number_of_dice, number_of_faces, modifier):
-    if int(modifier) >= 0:
-        roll_str = f"{number_of_dice}d{number_of_faces} + {modifier}"
-    else:
-        roll_str = f"{number_of_dice}d{number_of_faces} - {abs(int(modifier))}"
-
-    await rl.roll(ctx, roll_str)
 
 @bot.event
 async def on_voice_state_update(member, before, after):
