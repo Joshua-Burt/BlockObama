@@ -2,7 +2,7 @@ import os
 import subprocess
 import discord
 from bot import bot
-from src.log import log
+from log import log
 
 process = None
 server_path = ""

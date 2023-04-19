@@ -6,7 +6,8 @@ from discord import option
 from mutagen.mp3 import MP3
 
 from bot import bot
-from src import json_utils, sounds
+import json_utils
+import sounds
 from log import log
 
 max_length = 0

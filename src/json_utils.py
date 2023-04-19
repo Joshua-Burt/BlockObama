@@ -5,10 +5,9 @@ import shutil
 
 from log import log
 
-global users_file
-global price_file
-global youre_welcomes
-
+price_file = {}
+youre_welcomes = {}
+users_file = {}
 
 async def init():
     valid_files = await verify_files()
@@ -58,6 +57,9 @@ def add_user(member_id):
 
 
 def update_user(member_id, field, value):
+    if users_file is None:
+        raise Exception("users_files in json_utils.py is None")
+
     json_member = users_file[str(member_id)]
 
     if json_member is not None:
@@ -69,6 +71,9 @@ def update_user(member_id, field, value):
 
 
 def get_user_field(member_id, field):
+    if users_file is None:
+        raise Exception("users_files in json_utils.py is None")
+
     if str(member_id) in users_file:
         json_member = users_file[str(member_id)]
         return json_member[field]
@@ -88,18 +93,26 @@ def get_sound_price(sound_name):
     :rtype: int or None
     """
 
+    if price_file is None:
+        raise Exception("price_file in json_utils.py is None")
+
     if sound_name in price_file:
         return price_file[sound_name]["price"]
     return None
 
 
 def set_sound_price(sound_name):
+    if price_file is None:
+        raise Exception("price_file in json_utils.py is None")
+
     return price_file[sound_name]["price"]
 
 
 # YOU'RE WELCOME JSON
 async def get_random_youre_welcome():
-    global youre_welcomes
+    if youre_welcomes is None:
+        raise Exception("price_file in json_utils.py is None")
+
     return random.choice(youre_welcomes)
 
 
