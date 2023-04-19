@@ -28,7 +28,7 @@ if config_integrity is not True:
     print(config_integrity)
     sys.exit()
 
-with open('json_files/config.json', 'r') as f:
+with open('../json_files/config.json', 'r') as f:
     config = json.load(f)
 
 # Constants
@@ -204,7 +204,7 @@ async def points(ctx):
 
 @bot.slash_command(name="shop", description="Display the sounds shop")
 async def shop(ctx):
-    with open('json_files/item_prices.json', 'r') as file:
+    with open('../json_files/item_prices.json', 'r') as file:
         data = json.load(file)
 
         string = "Use **/play *[Sound Name]*** to play the sound\n"

@@ -14,7 +14,7 @@ async def init(play_function):
     options = []
 
     play_sound = play_function
-    filenames = next(walk("downloads/pay_to_play"), (None, None, []))[2]
+    filenames = next(walk("../downloads/pay_to_play"), (None, None, []))[2]
     for i in range(len(filenames)):
         filenames[i] = Path(filenames[i]).stem
 

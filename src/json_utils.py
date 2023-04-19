@@ -17,13 +17,13 @@ async def init():
     if valid_files is not True:
         return valid_files
 
-    with open('json_files/users.json', 'r') as f:
+    with open('../json_files/users.json', 'r') as f:
         user_data = json.load(f)
 
-    with open('json_files/item_prices.json', 'r') as f:
+    with open('../json_files/item_prices.json', 'r') as f:
         price_data = json.load(f)
 
-    with open('youre_welcome.txt', 'r') as f:
+    with open('../youre_welcome.txt', 'r') as f:
         youre_welcomes_data = f.read().split("\n")
 
     global users_file
@@ -53,7 +53,7 @@ def add_user(member_id):
         }
 
         # Dump into file
-        with open('json_files/users.json', 'w') as f:
+        with open('../json_files/users.json', 'w') as f:
             json.dump(users_file, f, indent=4)
 
 
@@ -64,7 +64,7 @@ def update_user(member_id, field, value):
         users_file[str(member_id)][field] = value
 
         # Dump into file
-        with open('json_files/users.json', 'w') as f:
+        with open('../json_files/users.json', 'w') as f:
             json.dump(users_file, f, indent=4)
 
 
@@ -104,12 +104,12 @@ async def get_random_youre_welcome():
 
 
 def verify_file(fn):
-    if os.path.exists("json_files/" + fn + ".json"):
+    if os.path.exists("../json_files/" + fn + ".json"):
         return True
 
-    if os.path.exists("default/" + fn + ".json"):
-        print("File json_files/" + fn + ".json does not exist. Creating file.")
-        shutil.copy("default/" + fn + ".json", "json_files/" + fn + ".json")
+    if os.path.exists("../default/" + fn + ".json"):
+        print("File ../json_files/" + fn + ".json does not exist. Creating file.")
+        shutil.copy("../default/" + fn + ".json", "../json_files/" + fn + ".json")
         return True
     else:
         return "Default file " + fn + " not detected"

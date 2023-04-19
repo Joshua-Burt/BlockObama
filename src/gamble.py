@@ -9,11 +9,11 @@ global id_list
 
 
 async def init():
-    with open('json_files/jackpot.json', 'r') as f:
+    with open('../json_files/jackpot.json', 'r') as f:
         global jackpot_json
         jackpot_json = json.load(f)
 
-    with open('json_files/users.json', 'r') as f:
+    with open('../json_files/users.json', 'r') as f:
         global id_list
         id_list = list(json.load(f).keys())
 
@@ -147,14 +147,14 @@ async def pay_points(from_user, to_user, amount):
 async def add_to_jackpot(amount):
     jackpot_json["jackpot"]["points"] += amount
 
-    with open('json_files/jackpot.json', 'w') as file:
+    with open('../json_files/jackpot.json', 'w') as file:
         json.dump(jackpot_json, file, indent=4)
 
 
 async def reset_jackpot():
     jackpot_json["jackpot"]["points"] = 0
 
-    with open('json_files/jackpot.json', 'w') as file:
+    with open('../json_files/jackpot.json', 'w') as file:
         json.dump(jackpot_json, file, indent=4)
 
 
