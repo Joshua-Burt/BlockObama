@@ -1,3 +1,4 @@
 :loop
-python src/main.py
+cd src
+python main.py
 goto loop
