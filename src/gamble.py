@@ -176,17 +176,19 @@ async def get_jackpot_amount():
 async def add_points(voice_channel_ids, afk_channel_id):
     await bot.wait_until_ready()
 
-    for channel_id in voice_channel_ids:
-        channel = bot.get_channel(channel_id)
-        members = channel.members
+    if voice_channel_ids is not -1:
+        for channel_id in voice_channel_ids:
+            channel = bot.get_channel(channel_id)
+            members = channel.members
 
-        for member in members:
-            if not member.bot and str(member.id) in id_list:
-                json_utils.update_user(member.id, "points", json_utils.get_user_field(member.id, "points") + 100)
+            for member in members:
+                if not member.bot and str(member.id) in id_list:
+                    json_utils.update_user(member.id, "points", json_utils.get_user_field(member.id, "points") + 100)
 
-    afk_channel = bot.get_channel(afk_channel_id)
-    afk_members = afk_channel.members
+    if afk_channel_id is not -1:
+        afk_channel = bot.get_channel(afk_channel_id)
+        afk_members = afk_channel.members
 
-    for afk_member in afk_members:
-        if not afk_member.bot:
-            json_utils.update_user(afk_member.id, "points", json_utils.get_user_field(afk_member.id, "points") - 100)
+        for afk_member in afk_members:
+            if not afk_member.bot:
+                json_utils.update_user(afk_member.id, "points", json_utils.get_user_field(afk_member.id, "points") - 100)
