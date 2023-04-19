@@ -3,11 +3,12 @@ import os
 import random
 import shutil
 
-from log import log
+from bot import bot
 
 price_file = {}
 youre_welcomes = {}
 users_file = {}
+
 
 async def init():
     valid_files = await verify_files()
@@ -108,7 +109,6 @@ def set_sound_price(sound_name):
     return price_file[sound_name]["price"]
 
 
-# YOU'RE WELCOME JSON
 async def get_random_youre_welcome():
     if youre_welcomes is None:
         raise Exception("price_file in json_utils.py is None")
@@ -138,3 +138,12 @@ async def verify_files():
             return verify
 
     return True
+
+
+async def get_user_from_id(user_id):
+    name = bot.get_user(user_id)
+
+    if name is None:
+        name = await bot.fetch_user(user_id)
+
+    return name

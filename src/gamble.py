@@ -5,6 +5,8 @@ from bot import bot
 
 from discord.ext import tasks
 
+from json_utils import get_user_from_id
+
 global jackpot_json
 global id_list
 gambling_channel_id = -1
@@ -100,7 +102,7 @@ async def gamble(ctx, wager):
 
         json_utils.update_user(author.id, "points", author_prev_points - wager)
         json_utils.update_user(gifted_member, "points", json_utils.get_user_field(gifted_member, "points") + wager)
-        gifted_member_name = await get_user_from_id(bot, gifted_member)
+        gifted_member_name = await get_user_from_id(gifted_member)
 
         result = f"**{author}** has gambled **{wager:,}** and has given it to **{gifted_member_name}**."
 
@@ -114,7 +116,7 @@ async def gamble(ctx, wager):
 
     # Output for gifted
     if gifted_member is not None:
-        gifted_member_name = await get_user_from_id(bot, gifted_member)
+        gifted_member_name = await get_user_from_id(gifted_member)
         gifted_member_points = json_utils.get_user_field(gifted_member, "points")
 
         await ctx.respond(' '.join((result,
@@ -134,19 +136,11 @@ async def gamble(ctx, wager):
         await ctx.send(f"The jackpot is now **{await get_jackpot_amount():,}**")
 
 
-async def get_user_from_id(bot, user_id):
-    name = bot.get_user(user_id)
-
-    if name is None:
-        name = await bot.fetch_user(user_id)
-
-    return name
-
-
-async def points(ctx, bot):
+@bot.slash_command(name="points", description="Display the points of each member")
+async def points(ctx):
     output = ""
     for i in range(len(id_list)):
-        username = await get_user_from_id(bot, id_list[i])
+        username = await get_user_from_id(id_list[i])
         user_points = json_utils.get_user_field(id_list[i], "points")
         user_bets = json_utils.get_user_field(id_list[i], "bets")
 
@@ -179,7 +173,7 @@ async def get_jackpot_amount():
 
 
 @tasks.loop(minutes=3, count=None, reconnect=True)
-async def add_points(bot, voice_channel_ids, afk_channel_id):
+async def add_points(voice_channel_ids, afk_channel_id):
     await bot.wait_until_ready()
 
     for channel_id in voice_channel_ids:

@@ -13,6 +13,8 @@ from discord.ext import commands
 
 # Local Files
 from mutagen.mp3 import MP3
+
+import src.json_utils
 from log import log, error
 
 import json_utils
@@ -63,7 +65,7 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=game)
 
     global points_loop
-    gamble.add_points.start(bot, config["voice_channel"], config["afk_channel"])
+    gamble.add_points.start(config["voice_channel"], config["afk_channel"])
 
 
 @bot.event
@@ -106,11 +108,6 @@ async def mock(ctx):
             await ctx.respond("There wasn't any text to mock", ephemeral=True)
 
 
-@bot.slash_command(name="points", description="Display the points of each member")
-async def points(ctx):
-    await gamble.points(ctx, bot)
-
-
 @bot.slash_command(name="pay", description="Pay amount of points to another user")
 async def pay(ctx, payee, amount):
     if len(payee) > 0 and len(amount) > 0 and int(amount) > 0:
@@ -118,8 +115,8 @@ async def pay(ctx, payee, amount):
             await gamble.pay_points(ctx.author.id, payee.strip("<@!>"), int(amount))
 
             await ctx.respond("**{}** paid **{}** - **{:,}** points".format(
-                await gamble.get_user_from_id(bot, ctx.author.id),
-                await gamble.get_user_from_id(bot, payee.strip("<@!>")), int(amount)))
+                await src.json_utils.get_user_from_id(ctx.author.id),
+                await src.json_utils.get_user_from_id(payee.strip("<@!>")), int(amount)))
 
 
 @bot.slash_command(name="nick", description="Change the nickname of a user")
