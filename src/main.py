@@ -8,20 +8,17 @@ from os.path import exists
 import discord
 
 from colorama import Fore
-from discord import option
 from discord.ext import commands
 
 # Local Files
-from mutagen.mp3 import MP3
 from log import log, error
-
+from bot import bot
 import json_utils
 import roll
 import server
 import gamble
 import sounds
 import intro
-from bot import bot
 
 # Load config file to obtain the token
 config_integrity = json_utils.verify_file("config")
