@@ -83,8 +83,12 @@ async def mock(ctx, message: discord.Message):
     if message.author == bot.user:
         await ctx.respond('no')
     else:
-        in_str = message.content
-        await ctx.respond(await mockify(in_str))
+        message_text = message.content
+
+        if len(message_text) > 0:
+            await ctx.respond(await mockify(message_text))
+        else:
+            await ctx.respond("There wasn't any text to mock", ephemeral=True)
 
 
 @bot.slash_command(name="mock", description="Mock the last message sent")
@@ -94,8 +98,12 @@ async def mock(ctx):
     if logs[0].author == bot.user:
         await ctx.respond('no')
     else:
-        in_str = logs[0].content
-        await ctx.respond(await mockify(in_str))
+        message_text = logs[0].content
+
+        if len(message_text) > 0:
+            await ctx.respond(await mockify(message_text))
+        else:
+            await ctx.respond("There wasn't any text to mock", ephemeral=True)
 
 
 @bot.slash_command(name="roll", description="Roll a number of various sided dice")
