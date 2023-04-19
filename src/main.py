@@ -42,9 +42,6 @@ if DISCORD_TOKEN == "":
     sys.exit()
 
 
-points_loop = None
-
-
 @bot.event
 async def on_ready():
     # Startup printing, username, etc.
@@ -59,12 +56,12 @@ async def on_ready():
 
     await intro.init(config["max_intro_length"])
     await gamble.init(config["gamble_channel"])
+    await server.init(config["server_path"])
     await sounds.init()
 
     game = discord.Game(config["default_activity"])
     await bot.change_presence(status=discord.Status.online, activity=game)
 
-    global points_loop
     gamble.add_points.start(config["voice_channel"], config["afk_channel"])
 
 

@@ -31,21 +31,32 @@ async def stop_server(ctx):
     await bot.change_presence(status=discord.Status.online, activity=game)
 
 
+@bot.slash_command(name="command", description="Send a Minecraft server command")
+async def server_command(ctx, command):
+    global process
+    if not process:
+        await ctx.respond("The server is not running", ephemeral=True)
+    else:
+        output = process.communicate(command, timeout=10)[0]
+        await ctx.respond("Command sent, " + output, ephemeral=True)
+
+
 async def start(ctx, minecraft_server_path):
     global process
 
     if process:
         await ctx.respond("The server is already running")
-        print("Server is already running")
     else:
         await ctx.respond("Starting server...")
-        await ctx.send("It'll be like 2 minutes")
 
+        # Find and assign the current directory
         working_directory = os.getcwd()
+
+        # Go to the Server's directory and start the server using the run.bat file
         os.chdir(minecraft_server_path)
+        process = subprocess.Popen(['run.bat'], stdin=subprocess.PIPE, creationflags=subprocess.CREATE_NEW_CONSOLE, encoding='utf8')
 
-        process = subprocess.Popen(['start.bat'], stdin=subprocess.PIPE, creationflags=subprocess.CREATE_NEW_CONSOLE, encoding='utf8')
-
+        # Return to the original directory
         os.chdir(working_directory)
 
         # TODO: Check for server being online
@@ -54,10 +65,9 @@ async def start(ctx, minecraft_server_path):
 async def stop(ctx):
     global process
     if process:
-        await server_command("stop")
+        await server_command(ctx, "stop")
         await ctx.respond("Stopped the server")
         process = None
-        os.chdir("C:\\Users\\Turtl\\PycharmProjects\\BlockObama 2.0")
     else:
         await ctx.respond("The server isn't running")
 
@@ -78,8 +88,3 @@ async def ping_ip(ip, port):
     # else:
     #     print("{}:{} is not open".format(ip, port))
     #     return False
-
-
-async def server_command(command):
-    global process
-    output = process.communicate(command, timeout=10)[0]
