@@ -106,22 +106,6 @@ async def mock(ctx):
             await ctx.respond("There wasn't any text to mock", ephemeral=True)
 
 
-@bot.slash_command(name="roll", description="Roll a number of various sided dice")
-@option(
-    "modifier",
-    description="How much to add/subtract from the total roll",
-    required=False,
-    default=0
-)
-async def roll(ctx, number_of_dice, number_of_faces, modifier):
-    if int(modifier) >= 0:
-        roll_str = f"{number_of_dice}d{number_of_faces} + {modifier}"
-    else:
-        roll_str = f"{number_of_dice}d{number_of_faces} - {abs(int(modifier))}"
-
-    await rl.roll(ctx, roll_str)
-
-
 @bot.slash_command(name="gamble")
 async def bet(ctx, wager):
     if ctx.channel.id == config["gamble_channel"]:
@@ -185,6 +169,20 @@ async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Atta
     else:
         await ctx.respond("Please upload an .mp3 file")
 
+@bot.slash_command(name="roll", description="Roll a number of various sided dice")
+@option(
+    "modifier",
+    description="How much to add/subtract from the total roll",
+    required=False,
+    default=0
+)
+async def roll(ctx, number_of_dice, number_of_faces, modifier):
+    if int(modifier) >= 0:
+        roll_str = f"{number_of_dice}d{number_of_faces} + {modifier}"
+    else:
+        roll_str = f"{number_of_dice}d{number_of_faces} - {abs(int(modifier))}"
+
+    await rl.roll(ctx, roll_str)
 
 @bot.event
 async def on_voice_state_update(member, before, after):
@@ -194,7 +192,7 @@ async def on_voice_state_update(member, before, after):
 
         await log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
                                                        Fore.YELLOW + after.channel.name + Fore.RESET))
-        await play_sound(member, "downloads/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
+        await play_sound(member, "../downloads/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
 
 
 @bot.slash_command(name="points", description="Display the points of each member")
@@ -317,7 +315,7 @@ async def play_sound(member: discord.Member, source_name):
             while len(sound_queue) > 0:
                 source = sound_queue.pop(0)
                 audio_length = MP3(source).info.length
-                voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=source))
+                voice.play(discord.FFmpegPCMAudio(executable="../ffmpeg/bin/ffmpeg.exe", source=source))
 
                 voice.pause()
                 await asyncio.sleep(0.5)
