@@ -1,14 +1,19 @@
 import random
 import json
 import json_utils
+from bot import bot
 
 from discord.ext import tasks
 
 global jackpot_json
 global id_list
+gambling_channel_id = -1
 
 
-async def init():
+async def init(gamble_channel):
+    global gambling_channel_id
+    gambling_channel_id = gamble_channel
+
     with open('../json_files/jackpot.json', 'r') as f:
         global jackpot_json
         jackpot_json = json.load(f)
@@ -18,7 +23,18 @@ async def init():
         id_list = list(json.load(f).keys())
 
 
-async def gamble(ctx, bot, wager):
+@bot.slash_command(name="gamble")
+async def bet(ctx, wager):
+    if ctx.channel.id == gambling_channel_id:
+        await gamble(ctx, wager)
+
+        author_id = ctx.author.id
+        json_utils.update_user(author_id, "bets", json_utils.get_user_field(author_id, "bets") + 1)
+    else:
+        await ctx.respond("This isn't the gambling channel dummy")
+
+
+async def gamble(ctx, wager):
     if not wager.isnumeric() and wager != "all":
         await ctx.respond("What")
         return

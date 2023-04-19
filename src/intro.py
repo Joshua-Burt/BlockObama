@@ -45,7 +45,7 @@ async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Atta
         # Apply the new file
         file_name = json_utils.get_user_field(ctx.author.id, "file_name")
 
-        await attachment.save(Path(str(Path.cwd()) + f"/../downloads/intros/{str(file_name)}"))
+        await attachment.save(Path(str(Path.cwd()) + f"/../sounds/intros/{str(file_name)}"))
 
         await ctx.respond("Your intro has been changed")
         await log(f"Changed {Fore.YELLOW + str(ctx.author) + Fore.RESET}'s intro")
@@ -61,4 +61,4 @@ async def on_voice_state_update(member, before, after):
 
         await log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
                                                        Fore.YELLOW + after.channel.name + Fore.RESET))
-        await sounds.play_sound(member, "../downloads/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
+        await sounds.play_sound(member, "../sounds/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
