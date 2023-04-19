@@ -17,10 +17,11 @@ from mutagen.mp3 import MP3
 from log import log, error
 
 import json_utils
-import roll as rl
-import server as mcserver
+import roll
+import server
 import gamble
 import sounds
+import intro
 from bot import bot
 
 # Load config file to obtain the token
@@ -59,6 +60,7 @@ async def on_ready():
     game = discord.Game(config["default_activity"])
     await bot.change_presence(status=discord.Status.online, activity=game)
 
+    await intro.init(config["max_intro_length"])
     await gamble.init()
     await sounds.init(play_sound)
 
@@ -78,7 +80,7 @@ async def say(ctx, message):
     await ctx.respond("Said the words", ephemeral=True)
 
 
-@bot.message_command(name="mock", description="Mock the selected message")
+@bot.message_command(name="mock_message", description="Mock the selected message")
 async def mock(ctx, message: discord.Message):
     if message.author == bot.user:
         await ctx.respond('no')
@@ -115,70 +117,6 @@ async def bet(ctx, wager):
         json_utils.update_user(author_id, "bets", json_utils.get_user_field(author_id, "bets") + 1)
     else:
         await ctx.respond("This isn't the gambling channel dummy")
-
-
-@bot.slash_command(name="start", description="Start the Minecraft Server")
-async def start_server(ctx):
-    await log("Starting server...")
-    await mcserver.start(ctx, config["server_path"])
-
-    game = discord.Game("Minecraft")
-    await bot.change_presence(status=discord.Status.online, activity=game)
-
-
-@bot.slash_command(name="stop", description="Stop the Minecraft Server")
-async def stop_server(ctx):
-    await log("Stopped the server")
-    await mcserver.stop(ctx)
-
-    game = discord.Game("your mom")
-    await bot.change_presence(status=discord.Status.online, activity=game)
-
-
-@bot.slash_command(name="intro", description="Toggle your intro when joining a voice call")
-async def intro(ctx):
-    new_play_on_enter = not json_utils.get_user_field(ctx.author.id, "play_on_enter")
-    json_utils.update_user(ctx.author.id, "play_on_enter", new_play_on_enter)
-
-    await ctx.respond("Your intro is now " + ("ON" if new_play_on_enter else "OFF"), ephemeral=True)
-
-
-@bot.slash_command(name="upload", description="Upload an .mp3 file to change your intro", )
-@option(
-    "attachment",
-    discord.Attachment,
-    description=f"An .mp3 file to be used as your intro. Max {config['max_intro_length']} seconds.",
-    required=True,
-)
-async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Attachment):
-    if attachment.content_type == "audio/mpeg":
-        file = await attachment.to_file()
-
-        # Verify the length is less than the max
-        if MP3(file.fp).info.length > config["max_intro_length"]:
-            await ctx.respond(f"Intros must be less than {str(config['max_intro_length'])}")
-            return
-
-        # Apply the new file
-        file_name = json_utils.get_user_field(ctx.author.id, "file_name")
-
-        await attachment.save(Path(str(Path.cwd()) + f"../downloads/intros/{file_name}"))
-
-        await ctx.respond("Your intro has been changed")
-        await log(f"Changed {Fore.YELLOW + str(ctx.author) + Fore.RESET}'s intro")
-    else:
-        await ctx.respond("Please upload an .mp3 file")
-
-
-@bot.event
-async def on_voice_state_update(member, before, after):
-    if not before.channel and after.channel and not member.bot:
-        if json_utils.get_user_field(member.id, "play_on_enter") is None:
-            return
-
-        await log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
-                                                       Fore.YELLOW + after.channel.name + Fore.RESET))
-        await play_sound(member, "../downloads/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
 
 
 @bot.slash_command(name="points", description="Display the points of each member")
