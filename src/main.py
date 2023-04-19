@@ -4,7 +4,6 @@ import asyncio
 import json
 import sys
 from os.path import exists
-from pathlib import Path
 
 import discord
 
@@ -42,7 +41,6 @@ if DISCORD_TOKEN == "":
 
 
 points_loop = None
-sound_queue = []
 
 
 @bot.event
@@ -58,9 +56,8 @@ async def on_ready():
         await bot.close()
 
     await intro.init(config["max_intro_length"])
-    await gamble.init()
-    await sounds.init(play_sound)
-
+    await gamble.init(config["gamble_channel"])
+    await sounds.init()
 
     game = discord.Game(config["default_activity"])
     await bot.change_presence(status=discord.Status.online, activity=game)
@@ -109,60 +106,9 @@ async def mock(ctx):
             await ctx.respond("There wasn't any text to mock", ephemeral=True)
 
 
-@bot.slash_command(name="gamble")
-async def bet(ctx, wager):
-    if ctx.channel.id == config["gamble_channel"]:
-        await gamble.gamble(ctx, bot, wager)
-
-        author_id = ctx.author.id
-        json_utils.update_user(author_id, "bets", json_utils.get_user_field(author_id, "bets") + 1)
-    else:
-        await ctx.respond("This isn't the gambling channel dummy")
-
-
 @bot.slash_command(name="points", description="Display the points of each member")
 async def points(ctx):
     await gamble.points(ctx, bot)
-
-
-@bot.slash_command(name="shop", description="Display the sounds shop")
-async def shop(ctx):
-    with open('../json_files/item_prices.json', 'r') as file:
-        data = json.load(file)
-
-        string = "Use **/play *[Sound Name]*** to play the sound\n"
-
-        for sound_name in data:
-            string += f"> Name: **{sound_name}** | Price: **{data[sound_name]['price']:,}**\n"
-
-        await ctx.respond(string)
-
-
-@bot.slash_command(name="play", description="Play a sound")
-@option(
-    "sound_name",
-    description="Name of the sound from the shop",
-    required=True,
-    default=""
-)
-async def pay_to_play(ctx, sound_name):
-    current_points = json_utils.get_user_field(ctx.author.id, "points")
-    cost = json_utils.get_sound_price(sound_name)
-
-    if cost is None:
-        await ctx.respond("There's no sound with that name ¯\\_(ツ)_/¯")
-        return
-
-    if current_points >= cost:
-        await ctx.respond(f"Playing {sound_name}.mp3")
-        await log(f"Playing {Fore.YELLOW + sound_name}.mp3{Fore.RESET}")
-
-        await play_sound(ctx.author, f"downloads/pay_to_play/{sound_name}.mp3")
-
-        json_utils.update_user(ctx.author.id, "points", current_points - cost)
-    else:
-        await ctx.respond("Aha you're poor. You're missing {:,} points".format(
-            json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.author.id, "points")))
 
 
 @bot.slash_command(name="pay", description="Pay amount of points to another user")
@@ -199,11 +145,10 @@ async def nick(ctx, username, new_nick):
 @bot.slash_command(name="wan", description="Hello there")
 async def wan(ctx):
     await ctx.respond("Hello there")
-    await play_sound(ctx.author, "downloads/hello_there.mp3")
+    await sounds.play_sound(ctx.author, "sounds/hello_there.mp3")
 
 
 @bot.slash_command(name="reload", description="Reloads the bot's internal files")
-@commands.is_owner()
 async def reload(ctx):
     await log("Reloading JSON files...")
 
@@ -227,31 +172,8 @@ async def on_message(message):
     if message.content.lower() in thank_you_messages:
         await message.channel.send(await json_utils.get_random_youre_welcome())
 
-
-async def play_sound(member: discord.Member, source_name):
-    if exists(source_name):
-
-        channel = member.voice.channel
-        sound_queue.append(source_name)
-
-        if channel and bot.user not in channel.members:
-            voice = await channel.connect()
-
-            while len(sound_queue) > 0:
-                source = sound_queue.pop(0)
-                audio_length = MP3(source).info.length
-                voice.play(discord.FFmpegPCMAudio(executable="../ffmpeg/bin/ffmpeg.exe", source=source))
-
-                voice.pause()
-                await asyncio.sleep(0.5)
-                voice.resume()
-
-                await asyncio.sleep(audio_length + 2)
-
-            await voice.disconnect(force=True)
-
-
 # Helper functions
+
 
 # Take the last message sent and repeats it with alternating capitals
 # e.g. "Spongebob" -> "SpOnGeBoB"
