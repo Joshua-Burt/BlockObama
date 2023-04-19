@@ -1,8 +1,6 @@
 import asyncio
 import json
-from os import walk
 from os.path import exists
-from pathlib import Path
 
 import discord
 from colorama import Fore
@@ -53,7 +51,7 @@ async def pay_to_play(ctx, sound_name):
         await ctx.respond(f"Playing {sound_name}.mp3")
         await log(f"Playing {Fore.YELLOW + sound_name}.mp3{Fore.RESET}")
 
-        await play_sound(ctx.author, f"sounds/pay_to_play/{sound_name}.mp3")
+        await play_sound(ctx.author, f"../sounds/shop_sounds/{sound_name}.mp3")
 
         json_utils.update_user(ctx.author.id, "points", current_points - cost)
     else:
@@ -61,24 +59,31 @@ async def pay_to_play(ctx, sound_name):
             json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.author.id, "points")))
 
 
-async def play_sound(member: discord.Member, source_name):
-    if exists(source_name):
+async def play_sound(member: discord.Member, sound_path):
+    if exists(sound_path):
+        voice_channel = member.voice.channel
 
-        channel = member.voice.channel
-        sound_queue.append(source_name)
+        # Verify the user is in a voice channel
+        if not voice_channel:
+            return
 
-        if channel and bot.user not in channel.members:
-            voice = await channel.connect()
+        sound_queue.append(sound_path)
 
-            while len(sound_queue) > 0:
-                source = sound_queue.pop(0)
-                audio_length = MP3(source).info.length
-                voice.play(discord.FFmpegPCMAudio(executable="../ffmpeg/bin/ffmpeg.exe", source=source))
+        # Check if the bot is not already in a voice channel
+        if bot.user in voice_channel.members:
+            return
 
-                voice.pause()
-                await asyncio.sleep(0.5)
-                voice.resume()
+        voice = await voice_channel.connect()
 
-                await asyncio.sleep(audio_length + 2)
+        while len(sound_queue) > 0:
+            source = sound_queue.pop(0)
+            audio_length = MP3(source).info.length
+            voice.play(discord.FFmpegPCMAudio(executable="../ffmpeg/bin/ffmpeg.exe", source=source))
 
-            await voice.disconnect(force=True)
+            voice.pause()
+            await asyncio.sleep(0.5)
+            voice.resume()
+
+            await asyncio.sleep(audio_length + 2)
+
+        await voice.disconnect(force=True)
