@@ -3,6 +3,8 @@ import os
 import random
 import shutil
 
+import discord
+
 from bot import bot
 
 price_file = {}
@@ -43,6 +45,26 @@ async def reload_files():
 
 
 # USER JSON
+
+@bot.slash_command(name="add_user", description="Add a user to the internal files")
+async def add_new_user(ctx, username):
+    if len(username) > 0:
+        try:
+            user = await ctx.guild.fetch_member(username.strip("<@!>"))
+
+        # Intercepts an exception when a user does not provide a snowflake.
+        except discord.errors.HTTPException:
+            await ctx.respond("Please include the '@' at the start of the name of the user you wish to change",
+                              ephemeral=True)
+
+        else:
+            if get_user_field(user.id, "file_name") is None:
+                add_user(user.id)
+                await ctx.respond("User added to system", ephemeral=True)
+            else:
+                await ctx.respond("User is already in the system", ephemeral=True)
+
+
 def add_user(member_id):
     if get_user_field(member_id, "file_name") is None:
         users_file[str(member_id)] = {
