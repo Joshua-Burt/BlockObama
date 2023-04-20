@@ -1,11 +1,9 @@
 import random
 import json
-import json_utils
-from bot import bot
-
 from discord.ext import tasks
 
-from json_utils import get_user_from_id
+from json_utils import get_user_from_id, get_user_field, update_user
+from bot import bot
 
 global jackpot_json
 global id_list
@@ -31,7 +29,7 @@ async def bet(ctx, wager):
         await gamble(ctx, wager)
 
         author_id = ctx.author.id
-        json_utils.update_user(author_id, "bets", json_utils.get_user_field(author_id, "bets") + 1)
+        update_user(author_id, "bets", get_user_field(author_id, "bets") + 1)
     else:
         await ctx.respond("This isn't the gambling channel dummy")
 
@@ -42,15 +40,17 @@ async def gamble(ctx, wager):
         return
 
     author = ctx.author
-    author_prev_points = int(json_utils.get_user_field(author.id, "points"))
+    author_prev_points = int(get_user_field(author.id, "points"))
 
+    # If the wager is an integer value, simply cast it to an integer
+    # If it is "all", get the total amount of points the user has
     if wager != "all":
         wager = int(wager)
     else:
         wager = author_prev_points
 
     if wager <= 0:
-        await ctx.respond("You can't gamble {} points dumbass".format(wager))
+        await ctx.respond(f"You can't gamble {wager} points dumbass")
         return
 
     if author_prev_points < wager:
@@ -60,64 +60,84 @@ async def gamble(ctx, wager):
     value = random.random()
     result = ""
     jackpot_changed = False
-    gifted_member = None
+    gifted_member_id = None
 
+    # Triple the wager
     if value <= 0.05:
-        json_utils.update_user(author.id, "points", author_prev_points + (wager * 2))
+        await add_points(author.id, wager * 2)
         result = f"**{author}** has gambled **{wager:,}** and tripled their wager."
 
+    # Break even
     elif 0.05 < value <= 0.15:
         result = f"**{author}** has gambled **{wager:,}** and broke even."
 
+    # Doubled the wager
     elif 0.15 < value <= 0.30:
-        json_utils.update_user(author.id, "points", author_prev_points + wager)
+        await add_points(author.id, wager)
         result = f"**{author}** has gambled **{wager:,}** and doubled their wager."
 
+    # Lose some percentage of the wager
     elif 0.30 < value <= 0.45:
         multiple = random.random()
-        json_utils.update_user(author.id, "points", author_prev_points - wager + round(wager * multiple))
-        await add_to_jackpot(wager - round(wager * multiple))
+        amount = wager - round(wager * multiple)
+
+        await add_points(author.id, -amount)
+        await add_to_jackpot(amount)
+
         result = f"**{author}** has gambled **{wager:,}** and got {multiple:.2f}x back."
         jackpot_changed = True
 
+    # Lose half of the wager
     elif 0.45 < value <= 0.6:
-        json_utils.update_user(author.id, "points", author_prev_points - round(wager / 2))
-        await add_to_jackpot(round(wager / 2))
+        amount = round(wager / 2)
+
+        await add_points(author.id, -amount)
+        await add_to_jackpot(amount)
+
         result = f"**{author}** has gambled **{wager:,}** and lost half of it."
         jackpot_changed = True
 
+    # Gain some percentage of the wager
     elif 0.6 < value <= 0.85:
         multiple = 1 + random.random()
-        json_utils.update_user(author.id, "points", author_prev_points - wager + round(wager * multiple))
+        amount = round(wager * multiple)
+
+        await add_points(author.id, amount)
         result = f"**{author}** has gambled **{wager:,}** and gained {multiple:.2f}x back."
 
+    # Lose the entire wager
     elif 0.85 < value <= 0.90:
-        json_utils.update_user(author.id, "points", author_prev_points - wager)
-        await add_to_jackpot(round(wager))
+        await add_points(author.id, -wager)
+        await add_to_jackpot(wager)
+
         result = f"**{author}** has gambled **{wager:,}** and lost all of it."
         jackpot_changed = True
 
+    # Give the wager to a random user
     elif 0.90 < value < 0.999:
-        gifted_member = random.choice(id_list)
+        gifted_member_id = random.choice(id_list)
 
-        json_utils.update_user(author.id, "points", author_prev_points - wager)
-        json_utils.update_user(gifted_member, "points", json_utils.get_user_field(gifted_member, "points") + wager)
-        gifted_member_name = await get_user_from_id(gifted_member)
+        await add_points(author.id, -wager)
+        await add_points(gifted_member_id, wager)
+
+        gifted_member_name = await get_user_from_id(gifted_member_id)
 
         result = f"**{author}** has gambled **{wager:,}** and has given it to **{gifted_member_name}**."
 
+    # Won the jackpot!
     else:
-        json_utils.update_user(author.id, "points", author_prev_points + await get_jackpot_amount())
+        await add_points(author.id, await get_jackpot_amount())
         result = f"**Congrats!** You've won the jackpot of **{await get_jackpot_amount():,}** points!"
+
         await reset_jackpot()
         jackpot_changed = True
 
-    author_curr_points = json_utils.get_user_field(author.id, "points")
+    author_curr_points = get_user_field(author.id, "points")
 
     # Output for gifted
-    if gifted_member is not None:
-        gifted_member_name = await get_user_from_id(gifted_member)
-        gifted_member_points = json_utils.get_user_field(gifted_member, "points")
+    if gifted_member_id is not None:
+        gifted_member_name = await get_user_from_id(gifted_member_id)
+        gifted_member_points = get_user_field(gifted_member_id, "points")
 
         await ctx.respond(' '.join((result,
                                     f"\n**{author}'s** current balance is **{author_curr_points:,}**."
@@ -129,11 +149,16 @@ async def gamble(ctx, wager):
     # Ran outta money
     if author_curr_points <= 0:
         await ctx.send("Congratulations, you've lost everything! You've been reset to 1000 points")
-        json_utils.update_user(author.id, "points", 1000)
+        update_user(author.id, "points", 1000)
 
     # Say jackpot changed
     if jackpot_changed:
         await ctx.send(f"The jackpot is now **{await get_jackpot_amount():,}**")
+
+
+async def add_points(user_id, amount):
+    author_prev_points = int(get_user_field(user_id, "points"))
+    update_user(user_id, "points", author_prev_points + amount)
 
 
 @bot.slash_command(name="points", description="Display the points of each member")
@@ -141,8 +166,8 @@ async def points(ctx):
     output = ""
     for i in range(len(id_list)):
         username = await get_user_from_id(id_list[i])
-        user_points = json_utils.get_user_field(id_list[i], "points")
-        user_bets = json_utils.get_user_field(id_list[i], "bets")
+        user_points = get_user_field(id_list[i], "points")
+        user_bets = get_user_field(id_list[i], "bets")
 
         output += f"> **{username}**:\n> \t{user_points:,} Points \n> \t{user_bets:,} Bets\n"
 
@@ -150,8 +175,8 @@ async def points(ctx):
 
 
 async def pay_points(from_user, to_user, amount):
-    json_utils.update_user(from_user, "points", json_utils.get_user_field(from_user, "points") - amount)
-    json_utils.update_user(to_user, "points", json_utils.get_user_field(to_user, "points") + amount)
+    update_user(from_user, "points", get_user_field(from_user, "points") - amount)
+    update_user(to_user, "points", get_user_field(to_user, "points") + amount)
 
 
 async def add_to_jackpot(amount):
@@ -173,7 +198,7 @@ async def get_jackpot_amount():
 
 
 @tasks.loop(minutes=3, count=None, reconnect=True)
-async def add_points(voice_channel_ids, afk_channel_id):
+async def points_loop(voice_channel_ids, afk_channel_id):
     await bot.wait_until_ready()
 
     if voice_channel_ids != -1:
@@ -183,7 +208,7 @@ async def add_points(voice_channel_ids, afk_channel_id):
 
             for member in members:
                 if not member.bot and str(member.id) in id_list:
-                    json_utils.update_user(member.id, "points", json_utils.get_user_field(member.id, "points") + 100)
+                    update_user(member.id, "points", get_user_field(member.id, "points") + 100)
 
     if afk_channel_id != -1:
         afk_channel = bot.get_channel(afk_channel_id)
@@ -191,4 +216,4 @@ async def add_points(voice_channel_ids, afk_channel_id):
 
         for afk_member in afk_members:
             if not afk_member.bot:
-                json_utils.update_user(afk_member.id, "points", json_utils.get_user_field(afk_member.id, "points") - 100)
+                update_user(afk_member.id, "points", get_user_field(afk_member.id, "points") - 100)
