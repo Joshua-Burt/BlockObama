@@ -57,7 +57,8 @@ async def on_ready():
     game = discord.Game(config["default_activity"])
     await bot.change_presence(status=discord.Status.online, activity=game)
 
-    gamble.points_loop.start(config["voice_channel"], config["afk_channel"])
+    if not gamble.points_loop.is_running():
+        gamble.points_loop.start(config["voice_channel"], config["afk_channel"])
 
 
 @bot.event
