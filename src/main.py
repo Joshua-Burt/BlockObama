@@ -1,24 +1,20 @@
 __author__ = "Joshua Burt"
 
-import asyncio
 import json
 import sys
-from os.path import exists
-
 import discord
-
 from colorama import Fore
 from discord.ext import commands
 
 # Local Files
-from log import log, error
-from bot import bot
 import json_utils
 import roll
 import server
 import gamble
 import sounds
 import intro
+from log import log, error_log
+from bot import bot
 
 # Load config file to obtain the token
 config_integrity = json_utils.verify_file("config")
@@ -46,7 +42,7 @@ async def on_ready():
     # Verify that the required .json files exist
     json_msg = await json_utils.init()
     if json_msg is not True:
-        await error(json_msg)
+        await error_log(json_msg)
         await bot.close()
 
     await intro.init(config["max_intro_length"])
@@ -57,8 +53,7 @@ async def on_ready():
     game = discord.Game(config["default_activity"])
     await bot.change_presence(status=discord.Status.online, activity=game)
 
-    if not gamble.points_loop.is_running():
-        gamble.points_loop.start(config["voice_channel"], config["afk_channel"])
+    await start_points_loop()
 
 
 @bot.event
@@ -162,10 +157,29 @@ async def on_message(message):
     if message.content.lower() in thank_you_messages:
         await message.channel.send(await json_utils.get_random_youre_welcome())
 
+
 # Helper functions
 
+async def start_points_loop():
+    guilds = bot.guilds
+    voice_channels = []
+    afk_channels = []
 
-# Take the last message sent and repeats it with alternating capitals
+    # Find all voice channels that the bot connects to, then add that to the respective list
+    for g in range(len(guilds)):
+        # Get all non-afk channels
+        for c in range(len(guilds[g].voice_channels)):
+            voice_channels.append(guilds[g].voice_channels[c].id)
+
+        # Add the afk channel, if it exists
+        if guilds[g].afk_channel:
+            afk_channels.append(guilds[g].afk_channel.id)
+
+    if not gamble.points_loop.is_running():
+        gamble.points_loop.start(voice_channels, afk_channels)
+
+
+# Transforms a string into a mocked string
 # e.g. "Spongebob" -> "SpOnGeBoB"
 async def mockify(in_str):
     new_string = ""

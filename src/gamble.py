@@ -198,10 +198,10 @@ async def get_jackpot_amount():
 
 
 @tasks.loop(minutes=3, count=None, reconnect=True)
-async def points_loop(voice_channel_ids, afk_channel_id):
+async def points_loop(voice_channel_ids, afk_channel_ids):
     await bot.wait_until_ready()
 
-    if voice_channel_ids != -1:
+    if len(voice_channel_ids) > 0:
         for channel_id in voice_channel_ids:
             channel = bot.get_channel(channel_id)
             members = channel.members
@@ -210,10 +210,11 @@ async def points_loop(voice_channel_ids, afk_channel_id):
                 if not member.bot and str(member.id) in id_list:
                     update_user(member.id, "points", get_user_field(member.id, "points") + 100)
 
-    if afk_channel_id != -1:
-        afk_channel = bot.get_channel(afk_channel_id)
-        afk_members = afk_channel.members
+    if len(afk_channel_ids) > 0:
+        for channel_id in afk_channel_ids:
+            afk_channel = bot.get_channel(channel_id)
+            afk_members = afk_channel.members
 
-        for afk_member in afk_members:
-            if not afk_member.bot:
-                update_user(afk_member.id, "points", get_user_field(afk_member.id, "points") - 100)
+            for afk_member in afk_members:
+                if not afk_member.bot:
+                    update_user(afk_member.id, "points", get_user_field(afk_member.id, "points") - 100)

@@ -2,8 +2,6 @@
     "token": "",
     "server_path": "",
     "gamble_channel": -1,
-    "voice_channel": -1,
-    "afk_channel": -1,
     "max_intro_length": 8,
     "default_activity": "Not Minecraft"
 }
