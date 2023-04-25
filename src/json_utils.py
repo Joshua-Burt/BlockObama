@@ -69,7 +69,7 @@ def add_user(member_id):
     if get_user_field(member_id, "file_name") is None:
         users_file[str(member_id)] = {
             "file_name": str(member_id) + ".mp3",
-            "points": 100,
+            "points": 1000,
             "bets": 0,
             "play_on_enter": False
         }

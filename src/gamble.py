@@ -216,5 +216,5 @@ async def points_loop(voice_channel_ids, afk_channel_ids):
             afk_members = afk_channel.members
 
             for afk_member in afk_members:
-                if not afk_member.bot:
+                if not afk_member.bot and str(afk_member.id) in id_list:
                     update_user(afk_member.id, "points", get_user_field(afk_member.id, "points") - 100)
