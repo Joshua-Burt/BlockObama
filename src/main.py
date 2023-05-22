@@ -57,8 +57,8 @@ async def on_ready():
 
 
 @bot.event
-async def on_member_join(member):
-    await log(f"Adding member {Fore.YELLOW + member + Fore.RESET}")
+async def on_member_join(member: discord.Member):
+    await log(f"Adding member {Fore.YELLOW + member.name + Fore.RESET}")
     json_utils.add_user(member.id)
 
 

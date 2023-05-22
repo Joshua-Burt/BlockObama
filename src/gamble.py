@@ -100,7 +100,7 @@ async def gamble(ctx, wager):
     # Gain some percentage of the wager
     elif 0.6 < value <= 0.85:
         multiple = 1 + random.random()
-        amount = round(wager * multiple)
+        amount = round((wager * multiple) - wager)
 
         await add_points(author.id, amount)
         result = f"**{author}** has gambled **{wager:,}** and gained {multiple:.2f}x back."

@@ -73,7 +73,18 @@ async def play_sound(member: discord.Member, sound_path):
         if bot.user in voice_channel.members:
             return
 
-        voice = await voice_channel.connect()
+        try:
+            voice = await voice_channel.connect()
+        except discord.errors.ClientException:
+            # The client already is in a channel
+            # Run through each voice channel and disconnect from which ever is connected
+            for i in range(len(bot.voice_clients)):
+                if bot.voice_clients[i].guild == member.guild:
+                    await bot.voice_clients[i].disconnect()
+                    break
+
+            # Reconnect to the new channel after disconnecting from the previous
+            voice = await voice_channel.connect()
 
         while len(sound_queue) > 0:
             source = sound_queue.pop(0)
