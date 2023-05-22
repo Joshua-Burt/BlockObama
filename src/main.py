@@ -130,7 +130,7 @@ async def nick(ctx, username, new_nick):
 @bot.slash_command(name="wan", description="Hello there")
 async def wan(ctx):
     await ctx.respond("Hello there")
-    await sounds.play_sound(ctx.author, "sounds/hello_there.mp3")
+    await sounds.add_to_queue(ctx.author, "sounds/hello_there.mp3")
 
 
 @bot.slash_command(name="reload", description="Reloads the bot's internal files")

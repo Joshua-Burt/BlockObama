@@ -11,6 +11,7 @@ from bot import bot
 from log import log
 import json_utils
 
+is_playing = False
 sound_queue = []
 sound_list = []
 
@@ -51,7 +52,7 @@ async def pay_to_play(ctx, sound_name):
         await ctx.respond(f"Playing {sound_name}.mp3")
         await log(f"Playing {Fore.YELLOW + sound_name}.mp3{Fore.RESET}")
 
-        await play_sound(ctx.author, f"../sounds/shop_sounds/{sound_name}.mp3")
+        await add_to_queue(ctx.author, f"../sounds/shop_sounds/{sound_name}.mp3")
 
         json_utils.update_user(ctx.author.id, "points", current_points - cost)
     else:
@@ -59,42 +60,66 @@ async def pay_to_play(ctx, sound_name):
             json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.author.id, "points")))
 
 
-async def play_sound(member: discord.Member, sound_path):
-    if exists(sound_path):
-        voice_channel = member.voice.channel
+async def play_queue():
+    global is_playing
+    is_playing = True
 
-        # Verify the user is in a voice channel
-        if not voice_channel:
-            return
+    while len(sound_queue) > 0:
+        sound_dict = sound_queue.pop(0)
+        voice = await play_sound(sound_dict)
 
-        sound_queue.append(sound_path)
+        # Disconnect from the voice channel is there are no more sounds to play
+        if len(sound_queue) == 0:
+            await voice.disconnect()
+            break
 
-        # Check if the bot is not already in a voice channel
-        if bot.user in voice_channel.members:
-            return
+        # Disconnect from the voice channel if the next sound isn't in the same channel
+        if sound_dict["channel"] != sound_queue[0]["channel"]:
+            await voice.disconnect()
 
-        try:
-            voice = await voice_channel.connect()
-        except discord.errors.ClientException:
-            # The client already is in a channel
-            # Run through each voice channel and disconnect from which ever is connected
-            for i in range(len(bot.voice_clients)):
-                if bot.voice_clients[i].guild == member.guild:
-                    await bot.voice_clients[i].disconnect()
-                    break
+    is_playing = False
 
-            # Reconnect to the new channel after disconnecting from the previous
-            voice = await voice_channel.connect()
 
-        while len(sound_queue) > 0:
-            source = sound_queue.pop(0)
-            audio_length = MP3(source).info.length
-            voice.play(discord.FFmpegPCMAudio(executable="../ffmpeg/bin/ffmpeg.exe", source=source))
+async def play_sound(sound_dict):
+    path = sound_dict["path"]
+    if not exists(path):
+        return
 
-            voice.pause()
-            await asyncio.sleep(0.5)
-            voice.resume()
+    voice_channel = sound_dict["channel"]
+    if not voice_channel:
+        return
 
-            await asyncio.sleep(audio_length + 2)
+    voice = await sound_dict["channel"].connect()
 
-        await voice.disconnect(force=True)
+    # Stay in this channel as long as the next sound is in the same channel
+    while True:
+        file_name = sound_dict['path'][sound_dict['path'].rfind('/') + 1:]
+
+        await log("Playing {} in {}".format(Fore.YELLOW + file_name + Fore.WHITE, Fore.YELLOW + sound_dict['channel'].name + Fore.RESET))
+
+        audio_length = MP3(path).info.length
+        voice.play(discord.FFmpegPCMAudio(executable="../ffmpeg/bin/ffmpeg.exe", source=path))
+
+        voice.pause()
+        await asyncio.sleep(0.5)
+        voice.resume()
+
+        await asyncio.sleep(audio_length + 2)
+
+        # Break from the loop if there's no sounds
+        if len(sound_queue) == 0:
+            break
+
+        # Change the path to the next sound if they are contained within the same channel
+        if sound_queue[0]["channel"] == sound_dict["channel"]:
+            path = sound_queue.pop()["path"]
+        else:
+            break
+
+    return voice
+
+
+async def add_to_queue(member: discord.Member, sound_path):
+    sound_queue.append({"channel": member.voice.channel, "path": sound_path})
+    if not is_playing:
+        await play_queue()

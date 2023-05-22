@@ -54,11 +54,6 @@ async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Atta
 
 
 @bot.event
-async def on_voice_state_update(member, before, after):
+async def on_voice_state_update(member: discord.Member, before, after):
     if not before.channel and after.channel and not member.bot:
-        if json_utils.get_user_field(member.id, "play_on_enter") is None:
-            return
-
-        await log("Playing {}\'s{} intro in {}".format(Fore.YELLOW + member.name, Fore.WHITE,
-                                                       Fore.YELLOW + after.channel.name + Fore.RESET))
-        await sounds.play_sound(member, "../sounds/intros/{}".format(json_utils.get_user_field(member.id, "file_name")))
+        await sounds.add_to_queue(member, "../sounds/intros/" + json_utils.get_user_field(member.id, 'file_name'))
