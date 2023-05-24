@@ -1,5 +1,3 @@
-__author__ = "Joshua Burt"
-
 import json
 import sys
 import discord
