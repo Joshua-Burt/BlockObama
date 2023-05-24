@@ -50,7 +50,7 @@ async def gamble(ctx, wager):
         wager = author_prev_points
 
     if wager <= 0:
-        await ctx.respond(f"You can't gamble {wager} points dumbass")
+        await ctx.respond(f"You can't gamble {wager} points")
         return
 
     if author_prev_points < wager:
@@ -58,7 +58,6 @@ async def gamble(ctx, wager):
         return
 
     value = random.random()
-    result = ""
     jackpot_changed = False
     gifted_member_id = None
 
@@ -146,7 +145,7 @@ async def gamble(ctx, wager):
     else:
         await ctx.respond(' '.join((result, f"Their current balance is **{author_curr_points:,}**")))
 
-    # Ran outta money
+    # Ran out of money
     if author_curr_points <= 0:
         await ctx.send("Congratulations, you've lost everything! You've been reset to 1000 points")
         update_user(author.id, "points", 1000)

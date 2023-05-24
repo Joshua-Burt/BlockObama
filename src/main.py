@@ -6,7 +6,6 @@ from discord.ext import commands
 
 # Local Files
 import json_utils
-import roll
 import server
 import gamble
 import sounds
