@@ -7,14 +7,14 @@ pytest_plugins = ('pytest_asyncio',)
 
 @pytest.mark.asyncio
 async def test_roll_no_modifier():
-    assert (1 <= await roll_using_notation("d10") <= 10)
-    assert (2 <= await roll_using_notation("2d4") <= 8)
+    assert 1 <= await roll_using_notation("d10") <= 10
+    assert 2 <= await roll_using_notation("2d4") <= 8
 
 
 @pytest.mark.asyncio
 async def test_roll_with_modifier():
-    assert (6 <= await roll_using_notation("2d4+4") <= 12)
-    assert (1 <= await roll_using_notation("2d4-1") <= 7)
+    assert 6 <= await roll_using_notation("2d4+4") <= 12
+    assert 1 <= await roll_using_notation("2d4-1") <= 7
 
 
 @pytest.mark.asyncio
