@@ -1,6 +1,5 @@
 import pytest
-from roll import roll_using_notation, prepare_roll
-
+from src.roll import roll_using_notation, prepare_roll
 
 pytest_plugins = ('pytest_asyncio',)
 
