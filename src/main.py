@@ -127,12 +127,6 @@ async def nick(ctx, username, new_nick):
             await ctx.respond(f"Changed {user.name}'s nickname to {new_nick}", ephemeral=True)
 
 
-@bot.slash_command(name="wan", description="Hello there")
-async def wan(ctx):
-    await ctx.respond("Hello there")
-    await sounds.add_to_queue(ctx.author, "sounds/hello_there.mp3")
-
-
 @bot.slash_command(name="reload", description="Reloads the bot's internal files")
 async def reload(ctx):
     await log("Reloading JSON files...")

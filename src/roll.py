@@ -27,10 +27,10 @@ async def roll(ctx, number_of_dice, number_of_faces, modifier):
     else:
         roll_str = f"{number_of_dice}d{number_of_faces} - {abs(int(modifier))}"
 
-    await roll(ctx, roll_str)
+    await roll_using_notation(ctx, roll_str)
 
 
-async def roll(ctx, raw_roll):
+async def roll_using_notation(ctx, raw_roll):
     roll_obj = prepare_roll(raw_roll.replace(" ", ""))
     random_num = 0
     modified_num = 0
@@ -81,13 +81,13 @@ async def roll(ctx, raw_roll):
         await ctx.respond("> " + str(num))
 
 
-# Inputs a string in the format of a D&D roll (eg. 2d20 + 2) and extracts the information, and finally returns an object
+# Inputs a string in the format of a D&D roll (e.g. 2d20 + 2) and extracts the information and finally returns an object
 # of type Roll that contains all the important information. In the case of invalid input, returns false.
 def prepare_roll(raw_roll):
     # Find where the 'd' in the message is to use as an anchor
     d_pos = raw_roll.find('d')
 
-    # If the 'd' exists and it's not the last character of the message
+    # If the 'd' exists, and it's not the last character of the message
     if d_pos != -1 and len(raw_roll) > d_pos + 1:
         # Checking if there are multiple rolls by seeing if the first character is a digit or not
         if raw_roll[0].isdigit():

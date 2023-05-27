@@ -34,7 +34,7 @@ async def stop_server(ctx):
 @bot.slash_command(name="command", description="Send a Minecraft server command")
 async def server_command(ctx, command):
     global process
-    if not process:
+    if process is None:
         await ctx.respond("The server is not running", ephemeral=True)
     else:
         output = process.communicate(command, timeout=10)[0]
@@ -54,7 +54,8 @@ async def start(ctx, minecraft_server_path):
 
         # Go to the Server's directory and start the server using the run.bat file
         os.chdir(minecraft_server_path)
-        process = subprocess.Popen(['run.bat'], stdin=subprocess.PIPE, creationflags=subprocess.CREATE_NEW_CONSOLE, encoding='utf8')
+        process = subprocess.Popen(['run.bat'], stdin=subprocess.PIPE, creationflags=subprocess.CREATE_NEW_CONSOLE,
+                                   encoding='utf8')
 
         # Return to the original directory
         os.chdir(working_directory)
@@ -74,17 +75,3 @@ async def stop(ctx):
 
 async def ping_ip(ip, port):
     raise NotImplementedError
-
-    # a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #
-    # location = (ip, port)
-    # result_of_check = a_socket.connect_ex(location)
-    #
-    # a_socket.close()
-    #
-    # if result_of_check == 0:
-    #     print("{}:{} is open".format(ip, port))
-    #     return True
-    # else:
-    #     print("{}:{} is not open".format(ip, port))
-    #     return False

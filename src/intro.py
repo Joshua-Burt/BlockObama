@@ -43,12 +43,12 @@ async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Atta
             return
 
         # Apply the new file
-        file_name = json_utils.get_user_field(ctx.author.id, "file_name")
+        file_name = json_utils.get_user_field(ctx.user.id, "file_name")
 
         await attachment.save(Path(str(Path.cwd()) + f"/../sounds/intros/{str(file_name)}"))
 
         await ctx.respond("Your intro has been changed")
-        await log(f"Changed {Fore.YELLOW + str(ctx.author) + Fore.RESET}'s intro")
+        await log(f"Changed {Fore.YELLOW + str(ctx.user) + Fore.RESET}'s intro")
     else:
         await ctx.respond("Please upload an .mp3 file")
 
