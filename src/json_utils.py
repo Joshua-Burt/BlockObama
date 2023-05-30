@@ -133,25 +133,25 @@ def set_sound_price(sound_name):
 
 async def get_random_youre_welcome():
     if youre_welcomes is None:
-        raise Exception("price_file in json_utils.py is None")
+        raise FileNotFoundError("price_file in json_utils.py is None")
 
     return random.choice(youre_welcomes)
 
 
-def verify_file(fn):
-    if os.path.exists("../json_files/" + fn + ".json"):
+def verify_file(file_name):
+    if os.path.exists("../json_files/" + file_name + ".json"):
         return True
 
     # Verify the folder exists
     if not os.path.exists("../json_files/"):
         os.mkdir("../json_files/")
 
-    if os.path.exists("../default/" + fn + ".json"):
-        print("File ../json_files/" + fn + ".json does not exist. Creating file.")
-        shutil.copy("../default/" + fn + ".json", "../json_files/" + fn + ".json")
+    if os.path.exists("../default/" + file_name + ".json"):
+        print("File ../json_files/" + file_name + ".json does not exist. Creating file.")
+        shutil.copy("../default/" + file_name + ".json", "../json_files/" + file_name + ".json")
         return True
     else:
-        return "Default file " + fn + " not detected"
+        return "Default file " + file_name + " not detected"
 
 
 async def verify_files():

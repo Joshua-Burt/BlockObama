@@ -162,15 +162,28 @@ async def add_points(user_id, amount):
 
 @bot.slash_command(name="points", description="Display the points of each member")
 async def points(ctx):
+    points_list = []
+
+    for i, user_id in enumerate(id_list):
+        username = await get_user_from_id(user_id)
+        user_points = get_user_field(user_id, "points")
+        user_bets = get_user_field(user_id, "bets")
+
+        user_point_info = (username, user_points, user_bets)
+        points_list.append(user_point_info)
+
+    points_list = sorted(points_list, key=lambda x:x[1], reverse=True)
+
+    await ctx.respond(f"{await points_tuple_to_string(points_list)}")
+
+
+async def points_tuple_to_string(user_tuple_list):
     output = ""
-    for i in range(len(id_list)):
-        username = await get_user_from_id(id_list[i])
-        user_points = get_user_field(id_list[i], "points")
-        user_bets = get_user_field(id_list[i], "bets")
 
-        output += f"> **{username}**:\n> \t{user_points:,} Points \n> \t{user_bets:,} Bets\n"
+    for i, user in enumerate(user_tuple_list):
+        output += f"> **{user[0]}**:\n> \t{user[1]:,} Points \n> \t{user[2]:,} Bets\n"
 
-    await ctx.respond("{}".format(output))
+    return output
 
 
 async def pay_points(from_user, to_user, amount):
