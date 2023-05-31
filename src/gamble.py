@@ -29,7 +29,7 @@ async def bet(ctx, wager):
         await gamble(ctx, wager)
 
         author_id = ctx.author.id
-        update_user(author_id, "bets", get_user_field(author_id, "bets") + 1)
+        await update_user(author_id, "bets", await get_user_field(author_id, "bets") + 1)
     else:
         await ctx.respond("This isn't the gambling channel dummy")
 
@@ -40,7 +40,7 @@ async def gamble(ctx, wager):
         return
 
     author = ctx.author
-    author_prev_points = int(get_user_field(author.id, "points"))
+    author_prev_points = int(await get_user_field(author.id, "points"))
 
     # If the wager is an integer value, simply cast it to an integer
     # If it is "all", get the total amount of points the user has
@@ -131,12 +131,12 @@ async def gamble(ctx, wager):
         await reset_jackpot()
         jackpot_changed = True
 
-    author_curr_points = get_user_field(author.id, "points")
+    author_curr_points = await get_user_field(author.id, "points")
 
     # Output for gifted
     if gifted_member_id is not None:
         gifted_member_name = await get_user_from_id(gifted_member_id)
-        gifted_member_points = get_user_field(gifted_member_id, "points")
+        gifted_member_points = await get_user_field(gifted_member_id, "points")
 
         await ctx.respond(' '.join((result,
                                     f"\n**{author}'s** current balance is **{author_curr_points:,}**."
@@ -148,7 +148,7 @@ async def gamble(ctx, wager):
     # Ran out of money
     if author_curr_points <= 0:
         await ctx.send("Congratulations, you've lost everything! You've been reset to 1000 points")
-        update_user(author.id, "points", 1000)
+        await update_user(author.id, "points", 1000)
 
     # Say jackpot changed
     if jackpot_changed:
@@ -156,8 +156,8 @@ async def gamble(ctx, wager):
 
 
 async def add_points(user_id, amount):
-    author_prev_points = int(get_user_field(user_id, "points"))
-    update_user(user_id, "points", author_prev_points + amount)
+    author_prev_points = int(await get_user_field(user_id, "points"))
+    await update_user(user_id, "points", author_prev_points + amount)
 
 
 @bot.slash_command(name="points", description="Display the points of each member")
@@ -166,8 +166,8 @@ async def points(ctx):
 
     for i, user_id in enumerate(id_list):
         username = await get_user_from_id(user_id)
-        user_points = get_user_field(user_id, "points")
-        user_bets = get_user_field(user_id, "bets")
+        user_points = await get_user_field(user_id, "points")
+        user_bets = await get_user_field(user_id, "bets")
 
         user_point_info = (username, user_points, user_bets)
         points_list.append(user_point_info)
@@ -187,8 +187,8 @@ async def points_tuple_to_string(user_tuple_list):
 
 
 async def pay_points(from_user, to_user, amount):
-    update_user(from_user, "points", get_user_field(from_user, "points") - amount)
-    update_user(to_user, "points", get_user_field(to_user, "points") + amount)
+    await update_user(from_user, "points", await get_user_field(from_user, "points") - amount)
+    await update_user(to_user, "points", await get_user_field(to_user, "points") + amount)
 
 
 async def add_to_jackpot(amount):
@@ -220,7 +220,7 @@ async def points_loop(voice_channel_ids, afk_channel_ids):
 
             for member in members:
                 if not member.bot and str(member.id) in id_list:
-                    update_user(member.id, "points", get_user_field(member.id, "points") + 100)
+                    await update_user(member.id, "points", await get_user_field(member.id, "points") + 100)
 
     if len(afk_channel_ids) > 0:
         for channel_id in afk_channel_ids:
@@ -229,4 +229,4 @@ async def points_loop(voice_channel_ids, afk_channel_ids):
 
             for afk_member in afk_members:
                 if not afk_member.bot and str(afk_member.id) in id_list:
-                    update_user(afk_member.id, "points", get_user_field(afk_member.id, "points") - 100)
+                    await update_user(afk_member.id, "points", await get_user_field(afk_member.id, "points") - 100)

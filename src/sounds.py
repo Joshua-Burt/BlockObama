@@ -9,7 +9,7 @@ from mutagen.mp3 import MP3
 
 from bot import bot
 from log import log
-import json_utils
+from json_utils import update_user, get_sound_price, get_user_field
 
 is_playing = False
 sound_queue = []
@@ -41,8 +41,8 @@ async def shop(ctx):
     default=""
 )
 async def pay_to_play(ctx, sound_name):
-    current_points = json_utils.get_user_field(ctx.author.id, "points")
-    cost = json_utils.get_sound_price(sound_name)
+    current_points = await get_user_field(ctx.author.id, "points")
+    cost = await get_sound_price(sound_name)
 
     if cost is None:
         await ctx.respond("There's no sound with that name ¯\\_(ツ)_/¯")
@@ -54,10 +54,10 @@ async def pay_to_play(ctx, sound_name):
 
         await add_to_queue(ctx.author, f"../sounds/shop_sounds/{sound_name}.mp3")
 
-        json_utils.update_user(ctx.author.id, "points", current_points - cost)
+        await update_user(ctx.author.id, "points", current_points - cost)
     else:
         await ctx.respond("Aha you're poor. You're missing {:,} points".format(
-            json_utils.get_sound_price(sound_name) - json_utils.get_user_field(ctx.author.id, "points")))
+            await get_sound_price(sound_name) - await get_user_field(ctx.author.id, "points")))
 
 
 async def play_queue():

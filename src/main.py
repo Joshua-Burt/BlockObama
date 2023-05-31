@@ -59,7 +59,7 @@ async def on_member_join(member: discord.Member):
         return
 
     await log(f"Adding member {Fore.YELLOW + member.name + Fore.RESET}")
-    json_utils.add_user(member.id)
+    await json_utils.add_user(member.id)
 
 
 @bot.slash_command(name="say", description="Repeat the inputted message")
@@ -99,7 +99,7 @@ async def mock(ctx):
 @bot.slash_command(name="pay", description="Pay amount of points to another user")
 async def pay(ctx, payee, amount):
     if len(payee) > 0 and len(amount) > 0 and int(amount) > 0:
-        if json_utils.get_user_field(ctx.author.id, "points") > int(amount):
+        if await json_utils.get_user_field(ctx.author.id, "points") > int(amount):
             await gamble.pay_points(ctx.author.id, payee.strip("<@!>"), int(amount))
 
             await ctx.respond("**{}** paid **{}** - **{:,}** points".format(

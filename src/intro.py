@@ -20,8 +20,8 @@ async def init(max_intro_length):
 
 @bot.slash_command(name="intro", description="Toggle your intro when joining a voice call")
 async def intro(ctx):
-    new_play_on_enter = not json_utils.get_user_field(ctx.author.id, "play_on_enter")
-    json_utils.update_user(ctx.author.id, "play_on_enter", new_play_on_enter)
+    new_play_on_enter = not await json_utils.get_user_field(ctx.author.id, "play_on_enter")
+    await json_utils.update_user(ctx.author.id, "play_on_enter", new_play_on_enter)
 
     await ctx.respond("Your intro is now " + ("ON" if new_play_on_enter else "OFF"), ephemeral=True)
 
@@ -43,7 +43,7 @@ async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Atta
             return
 
         # Apply the new file
-        file_name = json_utils.get_user_field(ctx.author.id, "file_name")
+        file_name = await json_utils.get_user_field(ctx.author.id, "file_name")
 
         await attachment.save(Path(str(Path.cwd()) + f"/../sounds/intros/{str(file_name)}"))
 
@@ -56,4 +56,4 @@ async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Atta
 @bot.event
 async def on_voice_state_update(member: discord.Member, before, after):
     if not before.channel and after.channel and not member.bot:
-        await sounds.add_to_queue(member, "../sounds/intros/" + json_utils.get_user_field(member.id, 'file_name'))
+        await sounds.add_to_queue(member, "../sounds/intros/" + await json_utils.get_user_field(member.id, 'file_name'))
