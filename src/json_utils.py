@@ -58,15 +58,15 @@ async def add_new_user(ctx, username):
                               ephemeral=True)
 
         else:
-            if get_user_field(user.id, "file_name") is None:
-                add_user(user.id)
+            if await get_user_field(user.id, "file_name") is None:
+                await add_user(user.id)
                 await ctx.respond("User added to system", ephemeral=True)
             else:
                 await ctx.respond("User is already in the system", ephemeral=True)
 
 
-def add_user(member_id):
-    if get_user_field(member_id, "file_name") is None:
+async def add_user(member_id):
+    if await get_user_field(member_id, "file_name") is None:
         users_file[str(member_id)] = {
             "file_name": str(member_id) + ".mp3",
             "points": 1000,
