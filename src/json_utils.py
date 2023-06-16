@@ -79,7 +79,7 @@ async def add_user(member_id):
             json.dump(users_file, f, indent=4)
 
 
-def update_user(member_id, field, value):
+async def update_user(member_id, field, value):
     if users_file is None:
         raise Exception("users_files in json_utils.py is None")
 
@@ -93,7 +93,7 @@ def update_user(member_id, field, value):
             json.dump(users_file, f, indent=4)
 
 
-def get_user_field(member_id, field):
+async def get_user_field(member_id, field):
     if users_file is None:
         raise Exception("users_files in json_utils.py is None")
 
@@ -103,12 +103,12 @@ def get_user_field(member_id, field):
     return None
 
 
-def pick_random_user():
+async def pick_random_user():
     return random.choice(users_file)
 
 
 # SOUNDS JSON
-def get_sound_price(sound_name):
+async def get_sound_price(sound_name):
     """
     :param sound_name: name of sound to be played
     :type sound_name: str
@@ -124,7 +124,7 @@ def get_sound_price(sound_name):
     return None
 
 
-def set_sound_price(sound_name):
+async def set_sound_price(sound_name):
     if price_file is None:
         raise Exception("price_file in json_utils.py is None")
 

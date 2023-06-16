@@ -55,5 +55,11 @@ async def upload_intro(ctx: discord.ApplicationContext, attachment: discord.Atta
 
 @bot.event
 async def on_voice_state_update(member: discord.Member, before, after):
-    if not before.channel and after.channel and not member.bot:
-        await sounds.add_to_queue(member, "../sounds/intros/" + await json_utils.get_user_field(member.id, 'file_name'))
+    if member.bot:
+        return
+
+    if not before.channel and after.channel:
+        filename = await json_utils.get_user_field(member.id, 'file_name')
+
+        if filename is not None:
+            await sounds.add_to_queue(member, "../sounds/intros/" + filename)
