@@ -28,7 +28,8 @@ async def shop(ctx):
     string = "Use **/play *[Sound Name]*** to play the sound\n"
 
     for sound_name in sound_list:
-        string += f"> Name: **{sound_name}** | Price: **{sound_list[sound_name]['price']:,}**\n"
+        sound_price = sound_list[sound_name]['price']
+        string += f"> Name: **{sound_name}** | Price: **{sound_price:,}**\n"
 
     await ctx.respond(string)
 
@@ -95,7 +96,8 @@ async def play_sound(sound_dict):
     while True:
         file_name = sound_dict['path'][sound_dict['path'].rfind('/') + 1:]
 
-        await log("Playing {} in {}".format(Fore.YELLOW + file_name + Fore.WHITE, Fore.YELLOW + sound_dict['channel'].name + Fore.RESET))
+        await log("Playing {} in {}".format(Fore.YELLOW + file_name + Fore.WHITE,
+                                            Fore.YELLOW + sound_dict['channel'].name + Fore.RESET))
 
         audio_length = MP3(path).info.length
         voice.play(discord.FFmpegPCMAudio(executable="../ffmpeg/bin/ffmpeg.exe", source=path))

@@ -58,7 +58,7 @@ async def add_new_user(ctx, username):
                               ephemeral=True)
 
         else:
-            if get_user_field(user.id, "file_name") is None:
+            if await get_user_field(user.id, "file_name") is None:
                 await add_user(user.id)
                 await ctx.respond("User added to system", ephemeral=True)
             else:
@@ -66,7 +66,7 @@ async def add_new_user(ctx, username):
 
 
 async def add_user(member_id):
-    if get_user_field(member_id, "file_name") is None:
+    if await get_user_field(member_id, "file_name") is None:
         users_file[str(member_id)] = {
             "file_name": str(member_id) + ".mp3",
             "points": 1000,
@@ -79,7 +79,7 @@ async def add_user(member_id):
             json.dump(users_file, f, indent=4)
 
 
-async def update_user(member_id, field, value):
+def update_user(member_id, field, value):
     if users_file is None:
         raise Exception("users_files in json_utils.py is None")
 
@@ -93,7 +93,7 @@ async def update_user(member_id, field, value):
             json.dump(users_file, f, indent=4)
 
 
-async def get_user_field(member_id, field):
+def get_user_field(member_id, field):
     if users_file is None:
         raise Exception("users_files in json_utils.py is None")
 
@@ -103,12 +103,12 @@ async def get_user_field(member_id, field):
     return None
 
 
-async def pick_random_user():
+def pick_random_user():
     return random.choice(users_file)
 
 
 # SOUNDS JSON
-async def get_sound_price(sound_name):
+def get_sound_price(sound_name):
     """
     :param sound_name: name of sound to be played
     :type sound_name: str
@@ -124,7 +124,7 @@ async def get_sound_price(sound_name):
     return None
 
 
-async def set_sound_price(sound_name):
+def set_sound_price(sound_name):
     if price_file is None:
         raise Exception("price_file in json_utils.py is None")
 
@@ -133,25 +133,25 @@ async def set_sound_price(sound_name):
 
 async def get_random_youre_welcome():
     if youre_welcomes is None:
-        raise FileNotFoundError("price_file in json_utils.py is None")
+        raise Exception("price_file in json_utils.py is None")
 
     return random.choice(youre_welcomes)
 
 
-def verify_file(file_name):
-    if os.path.exists("../json_files/" + file_name + ".json"):
+def verify_file(fn):
+    if os.path.exists("../json_files/" + fn + ".json"):
         return True
 
     # Verify the folder exists
     if not os.path.exists("../json_files/"):
         os.mkdir("../json_files/")
 
-    if os.path.exists("../default/" + file_name + ".json"):
-        print("File ../json_files/" + file_name + ".json does not exist. Creating file.")
-        shutil.copy("../default/" + file_name + ".json", "../json_files/" + file_name + ".json")
+    if os.path.exists("../default/" + fn + ".json"):
+        print("File ../json_files/" + fn + ".json does not exist. Creating file.")
+        shutil.copy("../default/" + fn + ".json", "../json_files/" + fn + ".json")
         return True
     else:
-        return "Default file " + file_name + " not detected"
+        return "Default file " + fn + " not detected"
 
 
 async def verify_files():
