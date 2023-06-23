@@ -166,6 +166,8 @@ async def add_points(user_id, amount):
 async def points(ctx: discord.ApplicationContext):
     points_list = []
 
+    message = await ctx.respond("**LOADING**\n")
+
     for i, user_id in enumerate(id_list):
         username = await get_user_from_id(user_id)
         user_points = await get_user_field(user_id, "points")
