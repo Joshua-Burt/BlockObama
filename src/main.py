@@ -10,6 +10,7 @@ import server
 import gamble
 import sounds
 import intro
+import roll
 from log import log, error_log
 from bot import bot
 
