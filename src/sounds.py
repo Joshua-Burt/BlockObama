@@ -1,8 +1,10 @@
 import asyncio
 import json
+import time
 from os.path import exists
 
 import discord
+from ffpyplayer.player import MediaPlayer
 from colorama import Fore
 from discord import option
 from mutagen.mp3 import MP3
@@ -99,12 +101,23 @@ async def play_sound(sound_dict):
         await log("Playing {} in {}".format(Fore.YELLOW + file_name + Fore.WHITE,
                                             Fore.YELLOW + sound_dict['channel'].name + Fore.RESET))
 
-        audio_length = MP3(path).info.length
-        voice.play(discord.FFmpegPCMAudio(executable="../ffmpeg/bin/ffmpeg.exe", source=path))
+        player = MediaPlayer(path)
 
-        voice.pause()
-        await asyncio.sleep(0.5)
-        voice.resume()
+        val = ''
+
+        audio_length = MP3(path).info.length
+
+        while 1:
+            frame, val = player.get_frame()
+            voice.play(val)
+            if val == 'eof':
+                break
+            elif frame is None:
+                time.sleep(0.01)
+            else:
+                img, t = frame
+                print(val, t, img.get_pixel_format(), img.get_buffer_size())
+                time.sleep(val)
 
         await asyncio.sleep(audio_length + 2)
 
