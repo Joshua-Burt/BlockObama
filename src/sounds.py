@@ -100,7 +100,7 @@ async def play_sound(sound_dict):
                                             Fore.YELLOW + sound_dict['channel'].name + Fore.RESET))
 
         audio_length = MP3(path).info.length
-        voice.play(discord.FFmpegPCMAudio(source=path))
+        voice.play(discord.FFmpegPCMAudio(source=path, options="-loglevel panic"))
 
         voice.pause()
         await asyncio.sleep(0.5)

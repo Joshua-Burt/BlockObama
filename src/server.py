@@ -52,9 +52,9 @@ async def start(ctx, minecraft_server_path):
         # Find and assign the current directory
         working_directory = os.getcwd()
 
-        # Go to the Server's directory and start the server using the run.bat file
+        # Go to the Server's directory and start the server using the run.sh file
         os.chdir(minecraft_server_path)
-        process = subprocess.Popen(['run.bat'], stdin=subprocess.PIPE, creationflags=subprocess.CREATE_NEW_CONSOLE,
+        process = subprocess.Popen(['run.sh'], stdin=subprocess.PIPE, creationflags=subprocess.CREATE_NEW_CONSOLE,
                                    encoding='utf8')
 
         # Return to the original directory
