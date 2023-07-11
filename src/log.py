@@ -10,7 +10,7 @@ def timestamp_to_readable(timestamp):
 
 
 async def log(input_str):
-    print(Fore.RESET + timestamp_to_readable(time.time()), Fore.WHITE + input_str)
+    print(Fore.RESET + timestamp_to_readable(time.time()), Fore.RESET + input_str)
 
 
 async def error_log(input_str):
