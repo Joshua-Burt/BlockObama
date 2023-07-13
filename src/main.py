@@ -11,7 +11,7 @@ import gamble
 import sounds
 import intro
 import roll
-from log import log, error_log
+from log import log, log_error
 from bot import bot
 
 # Load config file to obtain the token
@@ -40,7 +40,7 @@ async def on_ready():
     # Verify that the required .json files exist
     json_msg = await json_utils.init()
     if json_msg is not True:
-        await error_log(json_msg)
+        await log_error(json_msg)
         await bot.close()
 
     await intro.init(config["max_intro_length"])
@@ -148,9 +148,16 @@ async def on_command_error(ctx, error: discord.ext.commands.CommandError):
 
 @bot.event
 async def on_message(message):
-    thank_you_messages = ['thanks obama', 'thank you obama', 'thx obama', 'tanks obama', 'ty obama', 'thank u obama']
-    if message.content.lower() in thank_you_messages:
-        await message.channel.send(await json_utils.get_random_youre_welcome())
+    saying = await json_utils.get_saying_from_trigger(message)
+
+    if saying:
+        response = await json_utils.get_random_response(saying)
+
+        # Prevent a blank message from being sent
+        if len(response) > 0:
+            await message.channel.send(response)
+        else:
+            await log_error("on_message - Responses must be longer than 0 characters")
 
 
 # Helper functions
