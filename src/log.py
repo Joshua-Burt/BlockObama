@@ -13,5 +13,5 @@ async def log(input_str):
     print(Fore.RESET + timestamp_to_readable(time.time()), Fore.RESET + input_str)
 
 
-async def error_log(input_str):
-    print(Fore.RED + input_str)
+async def log_error(input_str):
+    print(Fore.RED + timestamp_to_readable(time.time()), input_str + Fore.RESET)

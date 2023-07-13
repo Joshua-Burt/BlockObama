@@ -8,7 +8,7 @@ import discord
 from bot import bot
 
 price_file = {}
-youre_welcomes = {}
+sayings = {}
 users_file = {}
 
 
@@ -25,8 +25,8 @@ async def init():
     with open('../json_files/item_prices.json', 'r') as f:
         price_data = json.load(f)
 
-    with open('../youre_welcome.txt', 'r') as f:
-        youre_welcomes_data = f.read().split("\n")
+    with open('../json_files/sayings.json', 'r') as f:
+        sayings_data = json.load(f)
 
     global users_file
     users_file = user_data
@@ -34,8 +34,8 @@ async def init():
     global price_file
     price_file = price_data
 
-    global youre_welcomes
-    youre_welcomes = youre_welcomes_data
+    global sayings
+    sayings = sayings_data
 
     return True
 
@@ -131,13 +131,6 @@ async def set_sound_price(sound_name):
     return price_file[sound_name]["price"]
 
 
-async def get_random_youre_welcome():
-    if youre_welcomes is None:
-        raise Exception("price_file in json_utils.py is None")
-
-    return random.choice(youre_welcomes)
-
-
 def verify_file(fn):
     if os.path.exists("../json_files/" + fn + ".json"):
         return True
@@ -156,7 +149,7 @@ def verify_file(fn):
 
 async def verify_files():
     # Verify .json files exist
-    file_names = ["config", "item_prices", "jackpot", "users"]
+    file_names = ["config", "item_prices", "jackpot", "users", "sayings"]
 
     for fn in file_names:
         verify = verify_file(fn)
@@ -164,6 +157,26 @@ async def verify_files():
             return verify
 
     return True
+
+
+async def get_saying_from_trigger(message):
+    # Convert the message to lowercase, as all triggers should be lowercase
+    msg = message.content.lower()
+
+    # Check each of the sayings to see if the message matches the trigger word
+    # We are looking for complete matches, not just a substring of a sentence for instance
+    for saying_id in sayings:
+        if msg in sayings[saying_id]["trigger"]:
+            # Return the id of the saying if the message exists in the trigger list
+            return saying_id
+    return None
+
+
+async def get_random_response(saying_id):
+    if saying_id is None:
+        return
+
+    return random.choice(sayings[saying_id]["response"])
 
 
 async def get_user_from_id(user_id):
