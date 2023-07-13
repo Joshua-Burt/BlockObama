@@ -148,8 +148,11 @@ async def on_command_error(ctx, error: discord.ext.commands.CommandError):
 
 @bot.event
 async def on_message(message):
-    saying = await json_utils.get_saying_from_trigger(message)
+    # Don't respond to bot messages, that spells disaster
+    if message.author.bot:
+        return
 
+    saying = await json_utils.get_saying_from_trigger(message)
     if saying:
         response = await json_utils.get_random_response(saying)
 
