@@ -97,6 +97,14 @@ async def mock(ctx):
             await ctx.respond("There wasn't any text to mock", ephemeral=True)
 
 
+@bot.slash_command(name="pyramid", description="M MA MAK MAKE A P PY PYR PYRA PYRAM PYRAMI PYRAMID")
+async def pyramid(ctx):
+    if len(ctx.message) > 0:
+        await ctx.respond(await word_pyramid(ctx.message))
+    else:
+        await ctx.respond("There wasn't any text to make a pyramid :(", ephemeral=True)
+
+
 @bot.slash_command(name="pay", description="Pay amount of points to another user")
 async def pay(ctx, payee, amount):
     if len(payee) > 0 and len(amount) > 0 and int(amount) > 0:
@@ -182,6 +190,31 @@ async def start_points_loop():
 
     if not gamble.points_loop.is_running():
         gamble.points_loop.start(voice_channels, afk_channels)
+
+
+# Transforms a word into a pyramid:
+# H
+# HE
+# HEL
+# HELL
+# HELLO
+# HELL
+# HEL
+# HE
+# H
+async def word_pyramid(word):
+    final_str = ""
+    for i in range(len(word) + 1):
+        for j in range(i):
+            final_str += word[j]
+        final_str += "\n"
+
+    for i in range(len(word)):
+        for j in range(len(word) - i - 1):
+            final_str += word[j]
+        final_str += "\n"
+
+    return final_str
 
 
 # Transforms a string into a mocked string
