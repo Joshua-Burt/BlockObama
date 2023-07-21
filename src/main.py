@@ -98,9 +98,9 @@ async def mock(ctx):
 
 
 @bot.slash_command(name="pyramid", description="M MA MAK MAKE A P PY PYR PYRA PYRAM PYRAMI PYRAMID")
-async def pyramid(ctx):
-    if len(ctx.message) > 0:
-        await ctx.respond(await word_pyramid(ctx.message))
+async def pyramid(ctx, word):
+    if len(word) > 0:
+        await ctx.respond(await word_pyramid(word))
     else:
         await ctx.respond("There wasn't any text to make a pyramid :(", ephemeral=True)
 
