@@ -1,8 +1,6 @@
 import pytest
 from roll import roll_using_notation, prepare_roll
 
-pytest_plugins = ('pytest_asyncio',)
-
 
 @pytest.mark.asyncio
 async def test_roll_no_modifier():
