@@ -11,6 +11,7 @@ import gamble
 import sounds
 import intro
 import roll
+import poll
 from log import log, log_error
 from bot import bot
 
