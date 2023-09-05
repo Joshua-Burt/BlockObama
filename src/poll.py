@@ -62,22 +62,23 @@ async def button(ctx, title, option1, option2,
 
     # 4 options given
     if option3 != "" and option4 != "":
-        await ctx.respond(header_message, view=FourOption())
+        await ctx.respond(header_message, view=FourOption(timeout=None))
         return
 
     # 3 options given
     if option3 != "":
-        await ctx.respond(header_message, view=ThreeOption())
+        await ctx.respond(header_message, view=ThreeOption(timeout=None))
         return
 
     # 2 options given
-    await ctx.respond(header_message, view=TwoOption())
+    await ctx.respond(header_message, view=TwoOption(timeout=None))
 
 
 async def edit_message(interaction, row):
     new_message_content = await add_vote(interaction.message.content, row)
     await interaction.message.edit(new_message_content)
     await interaction.response.defer()
+
 
 async def add_vote(original_message, option_number):
     lines = original_message.splitlines()
