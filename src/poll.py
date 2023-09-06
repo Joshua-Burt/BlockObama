@@ -1,5 +1,4 @@
 import discord
-from discord import option
 
 from bot import bot
 
@@ -46,8 +45,6 @@ class FourOption(discord.ui.View):
         await edit_message(interaction, 4)
 
 
-@option("option3", description="Third poll option", required=False, default="")
-@option("option4", description="Fourth poll option", required=False, default="")
 @bot.slash_command(name="poll", description="Create a poll")
 async def button(ctx, title, option1, option2,
                  option3: discord.Option(str) = "",
@@ -63,6 +60,11 @@ async def button(ctx, title, option1, option2,
     # 4 options given
     if option3 != "" and option4 != "":
         await ctx.respond(header_message, view=FourOption(timeout=None))
+        return
+
+    # 3 options given, option3 is empty but option4 is filled. option4 is now option 3
+    if option3 == "" and option4 != "":
+        await ctx.respond(header_message, view=ThreeOption(timeout=None))
         return
 
     # 3 options given
@@ -88,6 +90,12 @@ async def add_vote(original_message, option_number):
 
 async def choices_to_string(option1, option2, option3, option4):
     output_string = "Option 1: *" + option1 + "* - \nOption 2: *" + option2 + "* - "
+
+    # Special case: If option 3 is empty, but option 4 is given, option 4 is displayed as option 3 in the message
+    if option3 == "" and option4 != "":
+        output_string += "\nOption 3: *" + option4 + "* - "
+        return output_string
+
     if option3 != "":
         output_string += "\nOption 3: *" + option3 + "* - "
 
