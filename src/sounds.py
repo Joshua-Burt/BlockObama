@@ -94,11 +94,6 @@ async def play_sound(sound_dict):
 
     # Stay in this channel as long as the next sound is in the same channel
     while True:
-        file_name = sound_dict['path'][sound_dict['path'].rfind('/') + 1:]
-
-        await log("Playing {} in {}".format(Fore.YELLOW + file_name + Fore.WHITE,
-                                            Fore.YELLOW + sound_dict['channel'].name + Fore.RESET))
-
         audio_length = MP3(path).info.length
         voice.play(discord.FFmpegPCMAudio(source=path, options="-loglevel panic"))
 
