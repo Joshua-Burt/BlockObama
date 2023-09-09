@@ -83,8 +83,9 @@ async def add_vote(interaction: discord.Interaction, option):
         await interaction.response.defer()
         return
 
-    if await get_from_active_polls(interaction) is None:
-        await add_to_active_polls(interaction)
+    # Adds a vote to active poll
+    # If the poll doesn't exist in the array, it adds one
+    await add_vote_to_poll(interaction)
 
     await edit_message(interaction, option)
     await interaction.response.defer()
@@ -99,13 +100,14 @@ async def has_user_voted(interaction: discord.Interaction):
         return interaction.user.id in poll["users"]
 
 
-async def add_to_active_polls(interaction: discord.Interaction):
+async def add_vote_to_poll(interaction: discord.Interaction):
     # User has voted, don't add to poll and return
     if await has_user_voted(interaction):
         return
 
     poll = await get_from_active_polls(interaction)
 
+    # Add the user if the poll exists, otherwise add a new poll and add the user
     if poll is not None:
         poll["users"].append(interaction.user.id)
     else:
@@ -127,6 +129,8 @@ async def edit_message(interaction, row):
     new_message_content = await append_vote_to_line(interaction.message.content, row)
     await interaction.message.edit(new_message_content)
 
+
+# String manipulation functions
 
 async def append_vote_to_line(original_message, line_number):
     lines = original_message.splitlines()
