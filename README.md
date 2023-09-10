@@ -4,7 +4,10 @@
 - Voice channel intros
   - Customizable intro sound clips
   - Plays once someone joins a voice channel
-  
+
+- Polls
+  - Create polls to get opinions from members
+
 - Controlling a Minecraft server
   - Users can start and stop a server hosted on the same machine
   
