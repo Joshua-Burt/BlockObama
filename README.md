@@ -18,8 +18,8 @@
   - Lose points by spending time in AFK channel
   
 - Rolling dice system
-  - Simulates a rolling dice using dice notation
-  - e.g. The command **/roll 2d20** will simulate rolling 2 d20 dice
+  - Simulates a rolling dice
+  - This allows you to choose how many dice, how many faces, and modifiers
 
 
 - Anyone can change nicknames (if the bot is a higher role than target)
