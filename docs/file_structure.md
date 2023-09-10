@@ -1,7 +1,7 @@
 Several directories are not included in the GitHub repo, and instead are created at first-run.
 
 Currently, the `json_files` director is generated fully at first-run, but `sounds` is not.
-This will be ammended in a later date.
+This will be amended in a later date.
 
 Currently, you will need to manually create the sounds directory, and the two subdirectories.
 
