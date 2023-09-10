@@ -103,6 +103,11 @@ This listening and responding is done within `on_message()` in `main.py`
 
 There can be multiple triggers and multiple responses for every entry.
 
+| Identifier | Type         | Description                                       |
+|------------|--------------|---------------------------------------------------|
+| trigger    | string array | list of strings that BlockBot will listen for     |
+| response   | string array | list of responses that BlockBot will respond with | 
+
 ### Example:
 ```json
 {
