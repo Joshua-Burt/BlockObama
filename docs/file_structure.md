@@ -1,8 +1,17 @@
-Below is the file structure for the .json and .mp3 files which are part of the gitignore for this project.
+Several directories are not included in the GitHub repo, and instead are created at first-run.
 
+Currently, the `json_files` director is generated fully at first-run, but `sounds` is not.
+This will be ammended in a later date.
+
+Currently, you will need to manually create the sounds directory, and the two subdirectories.
+
+Below is the general file structure of both of those directories:
+
+```
 [Project Directory]
     |
-    └ — downloads
+    └ — sounds
+    |   |
     |   └ intros
     |   |   └ {file_name}.mp3
     |   |   └ etc.
@@ -15,9 +24,8 @@ Below is the file structure for the .json and .mp3 files which are part of the g
         └ config.json
         └ item_prices.json
         └ jackpot.json
+        └ sayings.json
         └ users.json
+```
 
-
-I intend to make it so these will autogenerate on the first run, or to add dummy data, but that is for the future.
-
-See json_file_structure.txt for insight into how the json files are structured
+You can find out more about each of the JSON files in `json_file_structure.md`
