@@ -1,15 +1,17 @@
-import asyncio
-import json
 from os.path import exists
-
-import discord
+from pathlib import Path
 from colorama import Fore
 from discord import option
 from mutagen.mp3 import MP3
 
+import asyncio
+import json
+import os
+import discord
+
 from bot import bot
 from log import log
-from json_utils import update_user, get_sound_price, get_user_field
+from json_utils import update_user, get_sound_price, get_user_field, add_sound
 
 is_playing = False
 sound_queue = []
@@ -59,6 +61,37 @@ async def pay_to_play(ctx, sound_name):
     else:
         await ctx.respond("Aha you're poor. You're missing {:,} points".format(
             await get_sound_price(sound_name) - await get_user_field(ctx.author.id, "points")))
+
+
+@bot.slash_command(name="add_to_shop", description="Adds a new sound to the shop", )
+@option(
+    "attachment",
+    discord.Attachment,
+    description="An .mp3 file to add to the shop",
+    required=True,
+)
+async def add_to_shop(ctx: discord.ApplicationContext, attachment: discord.Attachment, cost, name: discord.Option(str) = ""):
+    if not cost.isnumeric():
+        await ctx.respond("The cost must be a number", ephemeral=True)
+
+    if int(cost) < 0:
+        await ctx.respond("The cost cannot be negative", ephemeral=True)
+
+    if attachment.content_type != "audio/mpeg":
+        await ctx.respond("Please upload an .mp3 file", ephemeral=True)
+
+    file = await attachment.to_file()
+
+    if name != "":
+        file_name = name
+    else:
+        file_name = os.path.splitext(file.filename)[0]
+
+    await attachment.save(Path(str(Path.cwd()) + f"/../sounds/shop_sounds/{str(file_name)}.mp3"))
+    await add_sound(file_name, int(cost))
+
+    await ctx.respond(f"Sound {file_name} has been added", ephemeral=True)
+    await log(f"Added sound {Fore.YELLOW + file_name + Fore.RESET} to shop")
 
 
 async def play_queue():

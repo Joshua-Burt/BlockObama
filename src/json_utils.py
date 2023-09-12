@@ -7,7 +7,7 @@ import discord
 
 from bot import bot
 
-price_file = {}
+item_prices_file = {}
 sayings = {}
 users_file = {}
 
@@ -31,8 +31,8 @@ async def init():
     global users_file
     users_file = user_data
 
-    global price_file
-    price_file = price_data
+    global item_prices_file
+    item_prices_file = price_data
 
     global sayings
     sayings = sayings_data
@@ -116,19 +116,31 @@ async def get_sound_price(sound_name):
     :rtype: int or None
     """
 
-    if price_file is None:
+    if item_prices_file is None:
         raise Exception("price_file in json_utils.py is None")
 
-    if sound_name in price_file:
-        return price_file[sound_name]["price"]
+    if sound_name in item_prices_file:
+        return item_prices_file[sound_name]["price"]
     return None
 
 
 async def set_sound_price(sound_name):
-    if price_file is None:
+    if item_prices_file is None:
         raise Exception("price_file in json_utils.py is None")
 
-    return price_file[sound_name]["price"]
+    return item_prices_file[sound_name]["price"]
+
+
+async def add_sound(sound_name: str, price: int):
+    if item_prices_file is None:
+        raise Exception("price_file in json_utils.py is None")
+
+    item_prices_file[sound_name] = {
+        "price": price
+    }
+
+    with open('../json_files/item_prices.json', 'w') as f:
+        json.dump(item_prices_file, f, indent=4)
 
 
 def verify_file(fn):
