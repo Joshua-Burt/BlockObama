@@ -67,7 +67,7 @@ async def change_intro(ctx, attachment, user):
 
         # Verify the length is less than the max
         if MP3(file.fp).info.length > max_length:
-            await ctx.respond(f"Intros must be less than {str(max_length)}")
+            await ctx.respond(f"Intros must be less than {str(max_length)} seconds", ephemeral=True)
             return
 
         # Apply the new file
