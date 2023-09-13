@@ -37,12 +37,6 @@ async def shop(ctx):
 
 
 @bot.slash_command(name="play", description="Play a sound")
-@option(
-    "sound_name",
-    description="Name of the sound from the shop",
-    required=True,
-    default=""
-)
 async def pay_to_play(ctx, sound_name):
     current_points = await get_user_field(ctx.author.id, "points")
     cost = await get_sound_price(sound_name)
