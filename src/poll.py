@@ -1,4 +1,7 @@
+import time
+
 import discord
+from discord import option
 
 from bot import bot
 
@@ -30,6 +33,9 @@ class ThreeOption(discord.ui.View):
 
 
 class FourOption(discord.ui.View):
+    async def on_timeout(self):
+        self.disable_all_items()
+
     @discord.ui.button(label="Option 1", row=0, style=discord.ButtonStyle.primary)
     async def first_button_callback(self, button, interaction):
         await add_vote(interaction, 1)
@@ -47,12 +53,21 @@ class FourOption(discord.ui.View):
         await add_vote(interaction, 4)
 
 
+@option("timeout", description="Number of hours before poll expires")
 @bot.slash_command(name="poll", description="Create a poll")
 async def button(ctx, title, option1, option2,
                  option3: discord.Option(str) = "",
-                 option4: discord.Option(str) = ""):
+                 option4: discord.Option(str) = "",
+                 timeout: float = 1):
+
+    # Convert given number from hours into seconds
+    timeout *= 3600
+
+    expiry_time = round(time.time() + timeout)
+    timestamp_string = f"Expires <t:{expiry_time}:R>"
+
     options_string = await choices_to_string(option1, option2, option3, option4)
-    header_message = "**Poll for: \"" + title + "\"**\n" + options_string
+    header_message = "**Poll for: \"" + title + "\"** - " + timestamp_string + "\n" + options_string
 
     # No options given
     if option1 == "" or option2 == "":
@@ -61,24 +76,24 @@ async def button(ctx, title, option1, option2,
 
     # 4 options given
     if option3 != "" and option4 != "":
-        await ctx.respond(header_message, view=FourOption(timeout=None))
+        await ctx.respond(header_message, view=FourOption(timeout=timeout))
         return
 
     # 3 options given, option3 is empty but option4 is filled. option4 is now option 3
     if option3 == "" and option4 != "":
-        await ctx.respond(header_message, view=ThreeOption(timeout=None))
+        await ctx.respond(header_message, view=ThreeOption(timeout=timeout))
         return
 
     # 3 options given
     if option3 != "":
-        await ctx.respond(header_message, view=ThreeOption(timeout=None))
+        await ctx.respond(header_message, view=ThreeOption(timeout=timeout))
         return
 
     # 2 options given
-    await ctx.respond(header_message, view=TwoOption(timeout=None))
+    await ctx.respond(header_message, view=TwoOption(timeout=timeout))
 
 
-async def add_vote(interaction: discord.Interaction, option):
+async def add_vote(interaction: discord.Interaction, option_choice):
     if await has_user_voted(interaction):
         await interaction.response.defer()
         return
@@ -87,7 +102,7 @@ async def add_vote(interaction: discord.Interaction, option):
     # If the poll doesn't exist in the array, it adds one
     await add_vote_to_poll(interaction)
 
-    await edit_message(interaction, option)
+    await edit_message(interaction, option_choice)
     await interaction.response.defer()
 
 
