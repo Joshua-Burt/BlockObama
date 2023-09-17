@@ -9,6 +9,10 @@ active_polls = []
 
 
 class TwoOption(discord.ui.View):
+    async def on_timeout(self):
+        self.disable_all_items()
+        await remove_poll_from_active_list(self.message.id)
+
     @discord.ui.button(label="Option 1", row=0, style=discord.ButtonStyle.primary)
     async def first_button_callback(self, button, interaction: discord.Interaction):
         await add_vote(interaction, 1)
@@ -19,6 +23,10 @@ class TwoOption(discord.ui.View):
 
 
 class ThreeOption(discord.ui.View):
+    async def on_timeout(self):
+        self.disable_all_items()
+        await remove_poll_from_active_list(self.message.id)
+
     @discord.ui.button(label="Option 1", row=0, style=discord.ButtonStyle.primary)
     async def first_button_callback(self, button, interaction):
         await add_vote(interaction, 1)
@@ -34,7 +42,7 @@ class ThreeOption(discord.ui.View):
 
 class FourOption(discord.ui.View):
     async def on_timeout(self):
-        self.disable_all_items()
+        await deactivate_poll(self)
 
     @discord.ui.button(label="Option 1", row=0, style=discord.ButtonStyle.primary)
     async def first_button_callback(self, button, interaction):
@@ -127,16 +135,23 @@ async def add_vote_to_poll(interaction: discord.Interaction):
         poll["users"].append(interaction.user.id)
     else:
         dictionary = {
+            "message_id": interaction.message.id,
             "message": interaction.message,
             "users": [interaction.user.id]
         }
         active_polls.append(dictionary)
 
 
+async def deactivate_poll(view: discord.ui.View):
+    view.disable_all_items()
+    await view.message.edit(content=view.message.content, view=view)
+    await remove_poll_from_active_list(view.message.id)
+
+
 async def get_from_active_polls(interaction: discord.Interaction):
-    for i in range(len(active_polls)):
-        if active_polls[i]["message"] == interaction.message:
-            return active_polls[i]
+    for poll in active_polls:
+        if poll["message_id"] == interaction.message.id:
+            return poll
     return None
 
 
@@ -151,6 +166,15 @@ async def append_vote_to_line(original_message, line_number):
     lines = original_message.splitlines()
     lines[line_number] += "x"
     return "\n".join(lines)
+
+
+async def remove_poll_from_active_list(message_id):
+    print(active_polls)
+    for poll in active_polls:
+        if poll["message_id"] == message_id:
+            active_polls.remove(poll)
+            break
+    print(active_polls)
 
 
 async def choices_to_string(option1, option2, option3, option4):
