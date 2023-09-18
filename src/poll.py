@@ -10,8 +10,7 @@ active_polls = []
 
 class TwoOption(discord.ui.View):
     async def on_timeout(self):
-        self.disable_all_items()
-        await remove_poll_from_active_list(self.message.id)
+        await deactivate_poll(self)
 
     @discord.ui.button(label="Option 1", row=0, style=discord.ButtonStyle.primary)
     async def first_button_callback(self, button, interaction: discord.Interaction):
@@ -24,8 +23,7 @@ class TwoOption(discord.ui.View):
 
 class ThreeOption(discord.ui.View):
     async def on_timeout(self):
-        self.disable_all_items()
-        await remove_poll_from_active_list(self.message.id)
+        await deactivate_poll(self)
 
     @discord.ui.button(label="Option 1", row=0, style=discord.ButtonStyle.primary)
     async def first_button_callback(self, button, interaction):
