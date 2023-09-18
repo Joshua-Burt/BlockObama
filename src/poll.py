@@ -115,7 +115,7 @@ async def add_vote(interaction: discord.Interaction, option_choice):
 
 
 async def has_user_voted(interaction: discord.Interaction):
-    poll = await get_from_active_polls(interaction)
+    poll = await get_from_active_polls(interaction.message.id)
 
     if poll is None:
         return False
@@ -128,7 +128,7 @@ async def add_vote_to_poll(interaction: discord.Interaction):
     if await has_user_voted(interaction):
         return
 
-    poll = await get_from_active_polls(interaction)
+    poll = await get_from_active_polls(interaction.message.id)
 
     # Add the user if the poll exists, otherwise add a new poll and add the user
     if poll is not None:
@@ -136,21 +136,27 @@ async def add_vote_to_poll(interaction: discord.Interaction):
     else:
         dictionary = {
             "message_id": interaction.message.id,
-            "message": interaction.message,
+            "message": interaction.message.content,
             "users": [interaction.user.id]
         }
         active_polls.append(dictionary)
 
 
 async def deactivate_poll(view: discord.ui.View):
+    # Replace "Expires" with "Expired"
+    lines = (await get_from_active_polls(view.message.id))["message"].splitlines()
+    lines[0] = lines[0].replace('- Expires', "- Expired")
+    content = "\n".join(lines)
+
+    # Disable and refresh the view
     view.disable_all_items()
-    await view.message.edit(content=view.message.content, view=view)
+    await view.message.edit(content=content, view=view)
     await remove_poll_from_active_list(view.message.id)
 
 
-async def get_from_active_polls(interaction: discord.Interaction):
+async def get_from_active_polls(message_id):
     for poll in active_polls:
-        if poll["message_id"] == interaction.message.id:
+        if poll["message_id"] == message_id:
             return poll
     return None
 
@@ -158,6 +164,7 @@ async def get_from_active_polls(interaction: discord.Interaction):
 async def edit_message(interaction, row):
     new_message_content = await append_vote_to_line(interaction.message.content, row)
     await interaction.message.edit(new_message_content)
+    (await get_from_active_polls(interaction.message.id))["message"] = new_message_content
 
 
 # String manipulation functions
@@ -169,12 +176,10 @@ async def append_vote_to_line(original_message, line_number):
 
 
 async def remove_poll_from_active_list(message_id):
-    print(active_polls)
     for poll in active_polls:
         if poll["message_id"] == message_id:
             active_polls.remove(poll)
             break
-    print(active_polls)
 
 
 async def choices_to_string(option1, option2, option3, option4):
