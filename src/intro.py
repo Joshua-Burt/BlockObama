@@ -90,5 +90,5 @@ async def on_voice_state_update(member: discord.Member, before, after):
         filename = await json_utils.get_user_field(member.id, 'file_name')
 
         if filename is not None:
-            await log(f"Playing {Fore.YELLOW + filename + Fore.RESET}'s intro in {Fore.YELLOW + member.voice.channel.name + Fore.RESET}")
+            await log(f"Playing {Fore.YELLOW + member.display_name + Fore.RESET}'s intro in {Fore.YELLOW + member.voice.channel.name + Fore.RESET}")
             await sounds.add_to_queue(member, "../sounds/intros/" + filename)
