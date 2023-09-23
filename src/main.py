@@ -147,6 +147,13 @@ async def reload(ctx):
     await log("Files reloaded")
 
 
+@bot.slash_command(name="change_activity", description="Change the bot's current activity")
+async def change_activity(ctx, new_activity):
+    game = discord.Game(new_activity)
+    await bot.change_presence(status=discord.Status.online, activity=game)
+    await ctx.respond(f"Changed activity to \"{new_activity}\"", ephemeral=True)
+
+
 @bot.event
 async def on_command_error(ctx, error: discord.ext.commands.CommandError):
     if isinstance(error, commands.CommandNotFound):
