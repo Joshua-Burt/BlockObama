@@ -137,29 +137,11 @@ async def nick(ctx, username, new_nick):
             await ctx.respond(f"Changed {user.name}'s nickname to {new_nick}", ephemeral=True)
 
 
-@bot.slash_command(name="reload", description="Reloads the bot's internal files")
-async def reload(ctx):
-    await log("Reloading JSON files...")
-
-    await json_utils.reload_files()
-
-    await ctx.respond("Reloaded.", ephemeral=True)
-    await log("Files reloaded")
-
-
 @bot.slash_command(name="change_activity", description="Change the bot's current activity")
 async def change_activity(ctx, new_activity):
     game = discord.Game(new_activity)
     await bot.change_presence(status=discord.Status.online, activity=game)
     await ctx.respond(f"Changed activity to \"{new_activity}\"", ephemeral=True)
-
-
-@bot.event
-async def on_command_error(ctx, error: discord.ext.commands.CommandError):
-    if isinstance(error, commands.CommandNotFound):
-        # TODO: Inform user that the command doesn't exist
-        return
-    raise error
 
 
 @bot.event
@@ -187,14 +169,14 @@ async def start_points_loop():
     afk_channels = []
 
     # Find all voice channels that the bot connects to, then add that to the respective list
-    for g in range(len(guilds)):
+    for guild in guilds:
         # Get all non-afk channels
-        for c in range(len(guilds[g].voice_channels)):
-            voice_channels.append(guilds[g].voice_channels[c].id)
+        for channel in guild.voice_channels:
+            voice_channels.append(channel.id)
 
         # Add the afk channel, if it exists
-        if guilds[g].afk_channel:
-            afk_channels.append(guilds[g].afk_channel.id)
+        if guild.afk_channel:
+            afk_channels.append(guild.afk_channel.id)
 
     if not gamble.points_loop.is_running():
         gamble.points_loop.start(voice_channels, afk_channels)
