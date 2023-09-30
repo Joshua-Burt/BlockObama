@@ -65,13 +65,13 @@ async def on_member_join(member: discord.Member):
 
 
 @bot.slash_command(name="say", description="Repeat the inputted message")
-async def say(ctx, message):
+async def say(ctx: discord.ApplicationContext, message: str):
     await ctx.send(message)
     await ctx.respond("Said the words", ephemeral=True)
 
 
 @bot.message_command(name="mock_message", description="Mock the selected message")
-async def mock_message(ctx, message: discord.Message):
+async def mock_message(ctx: discord.ApplicationContext, message: discord.Message):
     if message.author == bot.user:
         await ctx.respond('no')
     else:
@@ -84,7 +84,7 @@ async def mock_message(ctx, message: discord.Message):
 
 
 @bot.slash_command(name="mock", description="Mock the last message sent")
-async def mock(ctx):
+async def mock(ctx: discord.ApplicationContext):
     logs = await ctx.channel.history(limit=1).flatten()
 
     if logs[0].author == bot.user:
@@ -99,7 +99,7 @@ async def mock(ctx):
 
 
 @bot.slash_command(name="pyramid", description="M MA MAK MAKE A P PY PYR PYRA PYRAM PYRAMI PYRAMID")
-async def pyramid(ctx, word):
+async def pyramid(ctx: discord.ApplicationContext, word: str):
     if len(word) > 0:
         await ctx.respond(await word_pyramid(word))
     else:
@@ -107,25 +107,35 @@ async def pyramid(ctx, word):
 
 
 @bot.slash_command(name="pay", description="Pay amount of points to another user")
-async def pay(ctx, payee, amount):
-    if len(payee) > 0 and len(amount) > 0 and int(amount) > 0:
-        if await json_utils.get_user_field(ctx.author.id, "points") > int(amount):
-            await gamble.pay_points(ctx.author.id, payee.strip("<@!>"), int(amount))
+async def pay(ctx: discord.ApplicationContext, payee: str, amount: int):
+    if len(payee) > 0 and amount > 0:
+        if await json_utils.get_user_field(ctx.author.id, "points") > amount:
+
+            payee_id = payee.strip("<@!>")
+            payee_member = await json_utils.get_user_from_id(payee_id)
+
+            if payee_member is None or await json_utils.get_user_field(payee_id, "points") is None:
+                await ctx.respond(f"User '{payee}' does not exist in the system")
+                return
+
+            await gamble.pay_points(ctx.author.id, payee_id, amount)
 
             await ctx.respond("**{}** paid **{}** - **{:,}** points".format(
                 await json_utils.get_user_from_id(ctx.author.id),
-                await json_utils.get_user_from_id(payee.strip("<@!>")), int(amount)))
+                payee_member, amount))
+    else:
+        await ctx.respond("You must provide a valid @username and payment amount")
 
 
 @bot.slash_command(name="nick", description="Change the nickname of a user")
-async def nick(ctx, username, new_nick):
+async def nick(ctx: discord.ApplicationContext, username: str, new_nick: str):
     if len(username) > 0 and len(new_nick) > 0:
         if len(new_nick) > 32:
             await ctx.respond("Nicknames cannot be longer than 32 characters", ephemeral=True)
             return
 
         try:
-            user = await ctx.guild.fetch_member(username.strip("<@!>"))
+            user = await ctx.guild.fetch_member(int(username.strip("<@!>")))
 
         # Intercepts an exception when a user does not provide a snowflake.
         except discord.errors.HTTPException:
@@ -138,14 +148,14 @@ async def nick(ctx, username, new_nick):
 
 
 @bot.slash_command(name="change_activity", description="Change the bot's current activity")
-async def change_activity(ctx, new_activity):
+async def change_activity(ctx: discord.ApplicationContext, new_activity: str):
     game = discord.Game(new_activity)
     await bot.change_presence(status=discord.Status.online, activity=game)
     await ctx.respond(f"Changed activity to \"{new_activity}\"", ephemeral=True)
 
 
 @bot.event
-async def on_message(message):
+async def on_message(message: discord.Message):
     # Don't respond to bot messages, that spells disaster
     if message.author.bot:
         return
@@ -192,7 +202,7 @@ async def start_points_loop():
 # HEL
 # HE
 # H
-async def word_pyramid(word):
+async def word_pyramid(word: str):
     final_str = ""
     for i in range(len(word) + 1):
         for j in range(i):
@@ -209,7 +219,7 @@ async def word_pyramid(word):
 
 # Transforms a string into a mocked string
 # e.g. "Spongebob" -> "SpOnGeBoB"
-async def mockify(in_str):
+async def mockify(in_str: str):
     new_string = ""
     case = True  # true = uppercase, false = lowercase
 
