@@ -151,8 +151,9 @@ def verify_file(fn):
     if not os.path.exists("../json_files/"):
         os.mkdir("../json_files/")
 
+    # Checks if the default version of the file exists
     if os.path.exists("../default/" + fn + ".json"):
-        print("File ../json_files/" + fn + ".json does not exist. Creating file.")
+        print("File json_files/" + fn + ".json does not exist. Creating file.")
         shutil.copy("../default/" + fn + ".json", "../json_files/" + fn + ".json")
         return True
     else:
