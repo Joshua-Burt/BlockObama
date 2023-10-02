@@ -24,6 +24,17 @@ async def init():
     with open('../json_files/item_prices.json', 'r') as file:
         sound_list = json.load(file)
 
+    if not os.path.exists("../sounds") or \
+       not os.path.exists("../sounds/intros") or \
+       not os.path.exists("../sounds/shop_sounds"):
+        await create_file_structure()
+
+
+async def create_file_structure():
+    await log("Creating sounds directory")
+    os.makedirs("../sounds/intros", exist_ok=True)
+    os.makedirs("../sounds/shop_sounds", exist_ok=True)
+
 
 @bot.slash_command(name="shop", description="Display the sounds shop")
 async def shop(ctx):

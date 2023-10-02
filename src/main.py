@@ -1,35 +1,13 @@
-import json
-import sys
 import discord
 from colorama import Fore
-from discord.ext import commands
 
+import initialize
 # Local Files
 import json_utils
-import server
 import gamble
-import sounds
-import intro
-import roll
-import poll
+
 from log import log, log_error
 from bot import bot
-
-# Load config file to obtain the token
-config_integrity = json_utils.verify_file("config")
-if config_integrity is not True:
-    print(config_integrity)
-    sys.exit()
-
-with open('../json_files/config.json', 'r') as f:
-    config = json.load(f)
-
-# Constants
-DISCORD_TOKEN = config["token"]
-
-if DISCORD_TOKEN == "":
-    print(Fore.RED + "Default token given. Please change token in config.json")
-    sys.exit()
 
 
 @bot.event
@@ -38,19 +16,7 @@ async def on_ready():
     await log(f'Logged in as {bot.user}' + Fore.YELLOW + '\nPowered on [o.o]' + Fore.RESET)
     print("---------------------------------")
 
-    # Verify that the required .json files exist
-    json_msg = await json_utils.init()
-    if json_msg is not True:
-        await log_error(json_msg)
-        await bot.close()
-
-    await intro.init(config["max_intro_length"])
-    await gamble.init(config["gamble_channel"])
-    await server.init(config["server_path"])
-    await sounds.init()
-
-    game = discord.Game(config["default_activity"])
-    await bot.change_presence(status=discord.Status.online, activity=game)
+    await initialize.init_all()
 
     await start_points_loop()
 
@@ -238,4 +204,10 @@ class Error(Exception):
         super().__init__(Fore.RED + message)
 
 
-bot.run(DISCORD_TOKEN)
+def main():
+    config = initialize.get_config()
+    bot.run(config["token"])
+
+
+if __name__ == "__main__":
+    main()
