@@ -17,7 +17,7 @@ from bot import bot
 
 
 async def init_all():
-    config = await get_config()
+    config = get_config()
     await init_components(config)
     await set_default_activity(config["default_activity"])
 

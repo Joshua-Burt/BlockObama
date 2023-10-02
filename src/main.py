@@ -1,11 +1,11 @@
 import discord
 from colorama import Fore
 
+import initialize
 # Local Files
 import json_utils
 import gamble
 
-from initialize import get_config
 from log import log, log_error
 from bot import bot
 
@@ -15,6 +15,8 @@ async def on_ready():
     # Startup printing, username, etc.
     await log(f'Logged in as {bot.user}' + Fore.YELLOW + '\nPowered on [o.o]' + Fore.RESET)
     print("---------------------------------")
+
+    await initialize.init_all()
 
     await start_points_loop()
 
@@ -203,7 +205,7 @@ class Error(Exception):
 
 
 def main():
-    config = get_config()
+    config = initialize.get_config()
     bot.run(config["token"])
 
 
