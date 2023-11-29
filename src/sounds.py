@@ -48,9 +48,13 @@ async def shop(ctx):
 
 
 @bot.slash_command(name="play", description="Play a sound")
-async def pay_to_play(ctx, sound_name):
+async def pay_to_play(ctx: discord.ApplicationContext, sound_name):
     current_points = await get_user_field(ctx.author.id, "points")
     cost = await get_sound_price(sound_name)
+
+    if ctx.author.voice is None:
+        await ctx.respond("You ain't in no channel")
+        return
 
     if cost is None:
         await ctx.respond("There's no sound with that name ¯\\_(ツ)_/¯")
