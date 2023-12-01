@@ -86,6 +86,9 @@ async def on_voice_state_update(member: discord.Member, before, after):
     if member.bot:
         return
 
+    if not await json_utils.get_user_field(member.id, 'play_on_enter'):
+        return
+
     if not before.channel and after.channel:
         filename = await json_utils.get_user_field(member.id, 'file_name')
 
