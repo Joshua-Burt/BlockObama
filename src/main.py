@@ -66,10 +66,10 @@ async def mock(ctx: discord.ApplicationContext):
 
 @bot.slash_command(name="pyramid", description="M MA MAK MAKE A P PY PYR PYRA PYRAM PYRAMI PYRAMID")
 async def pyramid(ctx: discord.ApplicationContext, word: str):
-    if len(word) > 0:
+    if len(word) < 45:
         await ctx.respond(await word_pyramid(word))
     else:
-        await ctx.respond("There wasn't any text to make a pyramid :(", ephemeral=True)
+        await ctx.respond("Due to Discord's 2000 character limit for messages, 44 characters is the maximum length for a pyramid :(", ephemeral=True)
 
 
 @bot.slash_command(name="pay", description="Pay amount of points to another user")
