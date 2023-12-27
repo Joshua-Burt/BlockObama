@@ -37,7 +37,7 @@ async def create_file_structure():
 
 
 @bot.slash_command(name="shop", description="Display the sounds shop")
-async def shop(ctx):
+async def shop(ctx: discord.ApplicationContext):
     string = "Use **/play *[Sound Name]*** to play the sound\n"
 
     for sound_name in sound_list:
@@ -158,7 +158,7 @@ async def play_sound(sound_dict):
     return voice
 
 
-async def add_to_queue(member: discord.Member, sound_path):
+async def add_to_queue(member: discord.Interaction.user, sound_path):
     sound_queue.append({"channel": member.voice.channel, "path": sound_path})
     if not is_playing:
         await play_queue()
