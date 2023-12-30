@@ -37,7 +37,7 @@ async def create_file_structure():
 
 
 @bot.slash_command(name="shop", description="Display the sounds shop")
-async def shop(ctx: discord.ApplicationContext):
+async def shop(ctx):
     string = "Use **/play *[Sound Name]*** to play the sound\n"
 
     for sound_name in sound_list:
@@ -103,20 +103,6 @@ async def add_to_shop(ctx: discord.ApplicationContext, attachment: discord.Attac
     await log(f"Added sound {Fore.YELLOW + file_name + Fore.RESET} to shop")
 
 
-@bot.slash_command(name="de", description="Stomp your way out")
-async def dramatic_exit(ctx: discord.ApplicationContext):
-    if ctx.author.voice is not None:
-        await ctx.respond("Dramatic.", ephemeral=True)
-        await add_to_queue(ctx.author, "../sounds/slam.mp3")
-    else:
-        await ctx.respond("How can you exit that which you are not in?", ephemeral=True)
-
-
-async def dramatic_exit_kick(author):
-    await asyncio.sleep(3.5)
-    await author.move_to(None)
-
-
 async def play_queue():
     global is_playing
     is_playing = True
@@ -146,30 +132,18 @@ async def play_sound(sound_dict):
     if not voice_channel:
         return
 
-    # Prevents an error where the bot is sometimes still in a voice channel
-    try:
-        voice = await sound_dict["channel"].connect()
-    except discord.ClientException:
-        for x in bot.voice_clients:
-            if x.guild == sound_dict["member"].guild:
-                await x.disconnect()
-                break
-
-        voice = await sound_dict["channel"].connect()
+    voice = await sound_dict["channel"].connect()
 
     # Stay in this channel as long as the next sound is in the same channel
     while True:
         audio_length = MP3(path).info.length
-        voice.play(discord.FFmpegPCMAudio(executable="../ffmpeg/bin/ffmpeg.exe", source=path))
+        voice.play(discord.FFmpegPCMAudio(source=path, options="-loglevel panic"))
 
         voice.pause()
         await asyncio.sleep(0.5)
         voice.resume()
 
-        if sound_dict["path"] == "../sounds/slam.mp3":
-            await dramatic_exit_kick(sound_dict["member"])
-        else:
-            await asyncio.sleep(audio_length + 2)
+        await asyncio.sleep(audio_length + 2)
 
         # Break from the loop if there's no sounds
         if len(sound_queue) == 0:
@@ -184,7 +158,7 @@ async def play_sound(sound_dict):
     return voice
 
 
-async def add_to_queue(member: discord.Interaction.user, sound_path):
-    sound_queue.append({"channel": member.voice.channel, "path": sound_path, "member": member})
+async def add_to_queue(member: discord.Member, sound_path):
+    sound_queue.append({"channel": member.voice.channel, "path": sound_path})
     if not is_playing:
         await play_queue()
