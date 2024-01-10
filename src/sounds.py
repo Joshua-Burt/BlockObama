@@ -57,7 +57,7 @@ async def pay_to_play(ctx: discord.ApplicationContext, sound_name):
         return
 
     if cost is None:
-        await ctx.respond("There's no sound with that name ¯\\_(ツ)_/¯")
+        await ctx.respond("There's no sound with that name ¯\\_(ツ)_/¯", ephemeral=True)
         return
 
     if current_points >= cost:
@@ -69,7 +69,7 @@ async def pay_to_play(ctx: discord.ApplicationContext, sound_name):
         await update_user(ctx.author.id, "points", current_points - cost)
     else:
         await ctx.respond("Aha you're poor. You're missing {:,} points".format(
-            await get_sound_price(sound_name) - await get_user_field(ctx.author.id, "points")))
+            await get_sound_price(sound_name) - await get_user_field(ctx.author.id, "points")), ephemeral=True)
 
 
 @bot.slash_command(name="add_to_shop", description="Adds a new sound to the shop", )
