@@ -194,8 +194,8 @@ async def get_random_response(saying_id):
 
 async def get_user_from_id(user_id: str):
     """
-        :param user_id: name of sound to be played
-        :returns: price to play the sound with the name
+        :param user_id: id of user
+        :returns: user with id provided
         :rtype: discord.Member or None
         """
     name = bot.get_user(user_id)
