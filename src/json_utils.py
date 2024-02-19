@@ -40,6 +40,7 @@ async def init():
     return True
 
 
+@bot.slash_command(name="reload", description="Reload internal files")
 async def reload_files():
     await init()
 
