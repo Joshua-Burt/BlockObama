@@ -41,8 +41,9 @@ async def init():
 
 
 @bot.slash_command(name="reload", description="Reload internal files")
-async def reload_files():
+async def reload_files(ctx):
     await init()
+    await ctx.respond("Reloaded internal files", ephemeral=True)
 
 
 # USER JSON
