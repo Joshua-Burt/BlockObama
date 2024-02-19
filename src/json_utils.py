@@ -68,7 +68,7 @@ async def add_new_user(ctx, username):
 async def add_user(member_id):
     if await get_user_field(member_id, "file_name") is None:
         users_file[str(member_id)] = {
-            "file_name": "",
+            "file_name": f"{str(member_id)}.mp3",
             "points": 1000,
             "bets": 0,
             "play_on_enter": False
