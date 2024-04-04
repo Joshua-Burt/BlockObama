@@ -53,7 +53,7 @@ async def pay_to_play(ctx: discord.ApplicationContext, sound_name):
     cost = await get_sound_price(sound_name)
 
     if ctx.author.voice is None:
-        await ctx.respond("You ain't in no channel")
+        await ctx.respond("You ain't in no channel", ephemeral=True)
         return
 
     if cost is None:
@@ -65,6 +65,31 @@ async def pay_to_play(ctx: discord.ApplicationContext, sound_name):
         await log(f"Playing {Fore.YELLOW + sound_name}.mp3{Fore.RESET}")
 
         await add_to_queue(ctx.author, f"../sounds/shop_sounds/{sound_name}.mp3")
+
+        await update_user(ctx.author.id, "points", current_points - cost)
+    else:
+        await ctx.respond("Aha you're poor. You're missing {:,} points".format(
+            await get_sound_price(sound_name) - await get_user_field(ctx.author.id, "points")), ephemeral=True)
+
+
+@bot.slash_command(name="air_drop", description="Play a sound in a channel")
+async def air_drop(ctx: discord.ApplicationContext, sound_name, channel: discord.VoiceChannel):
+    current_points = await get_user_field(ctx.author.id, "points")
+    cost = await get_sound_price(sound_name)
+
+    if channel is None:
+        await ctx.respond("That's not a channel", ephemeral=True)
+        return
+
+    if cost is None:
+        await ctx.respond("There's no sound with that name ¯\\_(ツ)_/¯", ephemeral=True)
+        return
+
+    if current_points >= cost:
+        await ctx.respond(f"Playing {sound_name}.mp3")
+        await log(f"Playing {Fore.YELLOW + sound_name}.mp3{Fore.RESET}")
+
+        await add_to_queue_channel(ctx.author, channel, f"../sounds/shop_sounds/{sound_name}.mp3")
 
         await update_user(ctx.author.id, "points", current_points - cost)
     else:
@@ -182,6 +207,12 @@ async def play_sound(sound_dict):
             break
 
     return voice
+
+
+async def add_to_queue_channel(member: discord.Interaction.user, channel: discord.VoiceChannel, sound_path):
+    sound_queue.append({"channel": channel, "path": sound_path, "member": member})
+    if not is_playing:
+        await play_queue()
 
 
 async def add_to_queue(member: discord.Interaction.user, sound_path):
