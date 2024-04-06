@@ -126,11 +126,26 @@ async def get_sound_price(sound_name):
     return None
 
 
-async def set_sound_price(sound_name):
+async def set_sound_price(sound_name, price):
     if item_prices_file is None:
         raise Exception("price_file in json_utils.py is None")
 
-    return item_prices_file[sound_name]["price"]
+    item_prices_file[sound_name]["price"] = price
+
+    # Dump into file
+    with open('../json_files/item_prices.json', 'w') as f:
+        json.dump(item_prices_file, f, indent=4)
+
+
+async def add_sound_uses(sound_name):
+    if item_prices_file is None:
+        raise Exception("price_file in json_utils.py is None")
+
+    item_prices_file[sound_name]["times_used"] = item_prices_file[sound_name]["times_used"] + 1
+
+    # Dump into file
+    with open('../json_files/item_prices.json', 'w') as f:
+        json.dump(item_prices_file, f, indent=4)
 
 
 async def add_sound(sound_name: str, price: int):
@@ -138,7 +153,8 @@ async def add_sound(sound_name: str, price: int):
         raise Exception("price_file in json_utils.py is None")
 
     item_prices_file[sound_name] = {
-        "price": price
+        "price": price,
+        "times_used": 0
     }
 
     with open('../json_files/item_prices.json', 'w') as f:
