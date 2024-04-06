@@ -72,10 +72,10 @@ async def pay_to_play(ctx: discord.ApplicationContext, sound_name):
             await get_sound_price(sound_name) - await get_user_field(ctx.author.id, "points")), ephemeral=True)
 
 
-@bot.slash_command(name="air_drop", description="Play a sound in a channel")
+@bot.slash_command(name="air_drop", description="Play a sound in a channel (2x listed price)")
 async def air_drop(ctx: discord.ApplicationContext, sound_name, channel: discord.VoiceChannel):
     current_points = await get_user_field(ctx.author.id, "points")
-    cost = await get_sound_price(sound_name)
+    cost = await get_sound_price(sound_name) * 2
 
     if channel is None:
         await ctx.respond("That's not a channel", ephemeral=True)
