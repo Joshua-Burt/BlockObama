@@ -1,3 +1,4 @@
+import operator
 from os.path import exists
 from pathlib import Path
 from colorama import Fore
@@ -11,18 +12,18 @@ import discord
 
 from bot import bot
 from log import log
-from json_utils import update_user, get_sound_price, get_user_field, add_sound
+from json_utils import update_user, get_sound_price, get_user_field, add_sound, add_sound_uses
 
 is_playing = False
 sound_queue = []
-sound_list = []
+sound_dict = {}
 
 
 async def init():
-    global sound_list
+    global sound_dict
 
     with open('../json_files/item_prices.json', 'r') as file:
-        sound_list = json.load(file)
+        sound_dict = json.load(file)
 
     if not os.path.exists("../sounds") or \
        not os.path.exists("../sounds/intros") or \
@@ -40,14 +41,25 @@ async def create_file_structure():
 async def shop(ctx):
     string = "Use **/play *[Sound Name]*** to play the sound\n"
 
-    for sound_name in sound_list:
-        sound_price = sound_list[sound_name]['price']
+    for sound_name in sound_dict:
+        sound_price = sound_dict[sound_name]['price']
         string += f"> Name: **{sound_name}** | Price: **{sound_price:,}**\n"
 
     await ctx.respond(string)
 
 
+async def get_sorted_sound_list(ctx: discord.AutocompleteContext):
+    sorted_keys = sorted(sound_dict.items(), key=lambda r: r[1]['times_used'], reverse=True)
+    return [sound_name[0] for sound_name in sorted_keys]
+
+
 @bot.slash_command(name="play", description="Play a sound")
+@option(
+    "sound_name",
+    description="Name of the sound you want to play",
+    autocomplete=get_sorted_sound_list,
+    required=True,
+)
 async def pay_to_play(ctx: discord.ApplicationContext, sound_name):
     current_points = await get_user_field(ctx.author.id, "points")
     cost = await get_sound_price(sound_name)
@@ -63,7 +75,7 @@ async def pay_to_play(ctx: discord.ApplicationContext, sound_name):
     if current_points >= cost:
         await ctx.respond(f"Playing {sound_name}.mp3")
         await log(f"Playing {Fore.YELLOW + sound_name}.mp3{Fore.RESET}")
-
+        await add_sound_uses(sound_name)
         await add_to_queue(ctx.author, f"../sounds/shop_sounds/{sound_name}.mp3")
 
         await update_user(ctx.author.id, "points", current_points - cost)
@@ -73,6 +85,12 @@ async def pay_to_play(ctx: discord.ApplicationContext, sound_name):
 
 
 @bot.slash_command(name="air_drop", description="Play a sound in a channel (2x listed price)")
+@option(
+    "sound_name",
+    description="Name of the sound you want to play",
+    autocomplete=get_sorted_sound_list,
+    required=True,
+)
 async def air_drop(ctx: discord.ApplicationContext, sound_name, channel: discord.VoiceChannel):
     current_points = await get_user_field(ctx.author.id, "points")
     cost = await get_sound_price(sound_name) * 2
@@ -89,6 +107,7 @@ async def air_drop(ctx: discord.ApplicationContext, sound_name, channel: discord
         await ctx.respond(f"Playing {sound_name}.mp3")
         await log(f"Playing {Fore.YELLOW + sound_name}.mp3{Fore.RESET}")
 
+        await add_sound_uses(sound_name)
         await add_to_queue_channel(ctx.author, channel, f"../sounds/shop_sounds/{sound_name}.mp3")
 
         await update_user(ctx.author.id, "points", current_points - cost)
