@@ -18,7 +18,7 @@ async def get_quickest(puzzles):
     puzzle_results = []
     for puzzle in puzzles:
         guesses = await get_number_of_guesses(puzzle.get("puzzle"))
-        puzzle_results.append({'guesses': guesses,'user': puzzle.get("user").global_name})
+        puzzle_results.append({'guesses': guesses,'user': puzzle.get("user").name})
 
     # Find the fastest guess(es)
     guesses = [result["guesses"] for result in puzzle_results]
@@ -31,7 +31,7 @@ async def get_most_volatile(puzzles):
     volatility_indices = []
     for puzzle in puzzles:
         volatility = await get_volatile_index(puzzle.get("puzzle"))
-        volatility_indices.append({'volatility': volatility ,'user': puzzle.get("user").global_name})
+        volatility_indices.append({'volatility': volatility ,'user': puzzle.get("user").name})
 
     # Find the most volatile
     vol = [result["volatility"] for result in volatility_indices]
@@ -47,7 +47,7 @@ async def get_most_helped(puzzles):
     help_indices = []
     for puzzle in puzzles:
         help_index = await get_help_index(puzzle.get("puzzle"))
-        help_indices.append({'help': help_index , 'user': puzzle.get("user").global_name})
+        help_indices.append({'help': help_index , 'user': puzzle.get("user").name})
 
     # Find the most volatile
     hel = [result["help"] for result in help_indices]
@@ -77,14 +77,14 @@ async def get_volatile_index(puzzle):
     return max(outliers)
 
 async def get_help_index(puzzle):
-    if await get_number_of_guesses(puzzle) == "?":
+    if await get_number_of_guesses(puzzle) == "X":
         return -1
 
     return await count_yellow(puzzle)
 
 
 async def get_number_of_guesses(puzzle):
-    x = re.search("([1-6]|[?])/6", puzzle)
+    x = re.search("([1-6]|[X])/6", puzzle)
     if x is None:
         return -1
 
@@ -227,9 +227,9 @@ async def summarize_month(ctx):
 async def wordle_loop():
     await bot.wait_until_ready()
 
-    # Get all the messages from the Wordle channel in the past day
+    # Get all the messages from the Wordle channel in the past two days
     channel = bot.get_channel(wordle_channel_id)
-    messages = await channel.history(after=datetime.datetime.now() - datetime.timedelta(days=1)).flatten()
+    messages = await channel.history(after=datetime.datetime.now() - datetime.timedelta(days=2)).flatten()
 
     puzzles = []
 
