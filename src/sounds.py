@@ -38,7 +38,7 @@ async def create_file_structure():
 
 
 @bot.slash_command(name="shop", description="Display the sounds shop")
-async def shop(ctx):
+async def shop(ctx: discord.ApplicationContext):
     string = "Use **/play *[Sound Name]*** to play the sound\n"
 
     for sound_name in sound_dict:

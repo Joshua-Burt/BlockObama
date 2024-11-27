@@ -15,7 +15,7 @@ The most important is the `token`.
 | Identifier           | Type   | Description                                                                                  |
 |----------------------|--------|----------------------------------------------------------------------------------------------|
 | token                | int    | the Discord bot's token                                                                      |
-| server_path          | string | the path to a Minecraft server with a run.sh in it                                           |
+| server_path          | string | the path to a Minecraft server with a run.bat in it                                          |
 | gamble_channel       | int    | channel id of a text channel that users can use the bet command                              |
 | max_intro_length     | int    | the maximum length (in seconds) a user uploaded intro can be. Prevents absurdly long intros. |
 | default_activity     | string | the text displayed under the bot's name (e.g. "Playing Not Minecraft")                       |
@@ -23,7 +23,7 @@ The most important is the `token`.
 ```json
 {
     "token": "Nzk3NjUxxDUMMYDATAxxNOTAREALKEYxxfdT4hT",
-    "server_path": "/Path/To/Server",
+    "server_path": "C:\\Path\\To\\Server",
     "gamble_channel": -1,
     "max_intro_length": 8,
     "default_activity": "Not Minecraft"
